@@ -19,6 +19,7 @@ class AlbumUpdate(BaseModel):
 
 class Album(AlbumBase):
     AlbumId: int
+    artist_name: Optional[str] = None
 
     class Config:
         from_attributes = True
