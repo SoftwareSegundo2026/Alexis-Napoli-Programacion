@@ -1,0 +1,454 @@
+:root {
+  --verde-cesped: #0f3d2e;
+  --verde-cesped-oscuro: #0a2b20;
+  --papel: #f7f5ef;
+  --card: #ffffff;
+  --tinta: #1a1a17;
+  --tinta-suave: #5c5a52;
+  --ambar: #e8a33d;
+  --ambar-suave: #f7e4bf;
+  --linea: #e3dfd3;
+
+  --fuente-display: "Oswald", sans-serif;
+  --fuente-cuerpo: "Inter", sans-serif;
+  --fuente-mono: "JetBrains Mono", monospace;
+
+  --radio: 10px;
+  --transicion: 0.15s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transicion: 0s;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--papel);
+  color: var(--tinta);
+  font-family: var(--fuente-cuerpo);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+:focus-visible {
+  outline: 3px solid var(--ambar);
+  outline-offset: 2px;
+}
+
+/* ---------- Cabecera ---------- */
+
+.cabecera {
+  background: var(--verde-cesped);
+  color: var(--papel);
+  padding: 1rem 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 3px solid var(--ambar);
+}
+
+.cabecera__marca {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
+.cabecera__logo {
+  font-size: 1.3rem;
+}
+
+.cabecera__titulo {
+  font-family: var(--fuente-display);
+  font-weight: 700;
+  font-size: 1.4rem;
+  letter-spacing: 0.06em;
+}
+
+.cabecera__subtitulo {
+  font-family: var(--fuente-mono);
+  font-size: 0.75rem;
+  color: var(--ambar-suave);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.pestanias {
+  display: flex;
+  gap: 0.25rem;
+  background: var(--verde-cesped-oscuro);
+  padding: 0.25rem;
+  border-radius: var(--radio);
+}
+
+.pestania {
+  font-family: var(--fuente-display);
+  font-size: 0.95rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  background: transparent;
+  color: var(--papel);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: calc(var(--radio) - 4px);
+  cursor: pointer;
+  transition: background var(--transicion), color var(--transicion);
+}
+
+.pestania:hover {
+  background: rgba(247, 245, 239, 0.12);
+}
+
+.pestania--activa,
+.pestania--activa:hover {
+  background: var(--ambar);
+  color: var(--verde-cesped-oscuro);
+}
+
+/* ---------- Layout principal ---------- */
+
+.contenido {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 1.25rem;
+  padding: 1.25rem;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  align-items: start;
+}
+
+@media (max-width: 800px) {
+  .contenido {
+    grid-template-columns: 1fr;
+  }
+}
+
+.panel {
+  background: var(--card);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  overflow: hidden;
+}
+
+.panel--lista {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 140px);
+}
+
+.panel__encabezado {
+  padding: 1rem 1rem 0.75rem;
+  border-bottom: 1px solid var(--linea);
+}
+
+.panel__encabezado h2 {
+  font-family: var(--fuente-display);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 0.6rem;
+  font-size: 1.1rem;
+}
+
+.buscador {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--linea);
+  border-radius: 6px;
+  font-family: var(--fuente-cuerpo);
+  font-size: 0.9rem;
+  background: var(--papel);
+  color: var(--tinta);
+}
+
+.lista {
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.lista__item {
+  padding: 0.65rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: background var(--transicion), border-color var(--transicion);
+}
+
+.lista__item:hover {
+  background: var(--papel);
+}
+
+.lista__item--activo {
+  background: var(--ambar-suave);
+  border-left-color: var(--ambar);
+}
+
+.lista__item-titulo {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.lista__item-meta {
+  font-size: 0.78rem;
+  color: var(--tinta-suave);
+  font-family: var(--fuente-mono);
+}
+
+.lista__vacio,
+.lista__error {
+  padding: 1rem;
+  color: var(--tinta-suave);
+  font-size: 0.9rem;
+}
+
+.lista__error {
+  color: #a5352c;
+}
+
+/* ---------- Panel de detalle ---------- */
+
+.panel--detalle {
+  padding: 1.5rem;
+  min-height: 300px;
+}
+
+.detalle-vacio {
+  height: 100%;
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: var(--tinta-suave);
+  text-align: center;
+}
+
+.detalle-vacio__icono {
+  font-size: 2rem;
+}
+
+.detalle__titulo {
+  font-family: var(--fuente-display);
+  font-size: 1.8rem;
+  letter-spacing: 0.02em;
+  margin: 0 0 0.25rem;
+}
+
+.detalle__subtitulo {
+  color: var(--tinta-suave);
+  font-size: 0.95rem;
+  margin: 0 0 1.25rem;
+}
+
+.badge {
+  display: inline-block;
+  font-family: var(--fuente-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: var(--verde-cesped);
+  color: var(--papel);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+.ficha {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0 1.5rem;
+}
+
+.ficha__dato {
+  background: var(--papel);
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+}
+
+.ficha__dato-label {
+  display: block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--tinta-suave);
+  margin-bottom: 0.2rem;
+}
+
+.ficha__dato-valor {
+  font-family: var(--fuente-mono);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.seccion {
+  margin-top: 1.5rem;
+}
+
+.seccion h3 {
+  font-family: var(--fuente-display);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 1rem;
+  border-bottom: 2px solid var(--verde-cesped);
+  padding-bottom: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+/* ---------- Listas dentro del detalle (equipos, contratos) ---------- */
+
+.sublista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sublista__item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.55rem 0.7rem;
+  background: var(--papel);
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.sublista__item-principal {
+  font-weight: 600;
+}
+
+.sublista__item-secundario {
+  color: var(--tinta-suave);
+  font-size: 0.82rem;
+}
+
+.sublista__item-monto {
+  font-family: var(--fuente-mono);
+  font-weight: 700;
+  color: var(--verde-cesped);
+  white-space: nowrap;
+}
+
+/* ---------- Tabla de posiciones (elemento de firma) ---------- */
+
+.tabla-posiciones-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+}
+
+.tabla-posiciones {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.tabla-posiciones thead th {
+  background: var(--verde-cesped);
+  color: var(--papel);
+  font-family: var(--fuente-display);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  padding: 0.6rem 0.5rem;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.tabla-posiciones thead th:first-child,
+.tabla-posiciones thead th:nth-child(2) {
+  text-align: left;
+}
+
+.tabla-posiciones tbody td {
+  padding: 0.55rem 0.5rem;
+  text-align: center;
+  font-family: var(--fuente-mono);
+  border-top: 1px solid var(--linea);
+}
+
+.tabla-posiciones tbody td:nth-child(2) {
+  text-align: left;
+  font-family: var(--fuente-cuerpo);
+  font-weight: 600;
+}
+
+.tabla-posiciones tbody tr:nth-child(even) {
+  background: rgba(15, 61, 46, 0.03);
+}
+
+.tabla-posiciones tbody tr.podio {
+  background: var(--ambar-suave);
+}
+
+.tabla-posiciones .puesto {
+  font-family: var(--fuente-mono);
+  font-weight: 700;
+  color: var(--tinta-suave);
+}
+
+.tabla-posiciones tbody tr.podio .puesto {
+  color: var(--verde-cesped-oscuro);
+}
+
+.tabla-posiciones__grupo {
+  font-family: var(--fuente-mono);
+  font-weight: 400;
+  font-size: 0.78rem;
+  color: var(--tinta-suave);
+}
+
+.tabla-posiciones .pts {
+  font-weight: 700;
+  color: var(--verde-cesped);
+}
+
+/* ---------- Pie ---------- */
+
+.pie {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--tinta-suave);
+  padding: 1rem;
+}
+
+.pie code {
+  font-family: var(--fuente-mono);
+  background: var(--linea);
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+}
+
+.estado-carga,
+.estado-error {
+  padding: 1rem;
+  font-size: 0.9rem;
+  color: var(--tinta-suave);
+}
+
+.estado-error {
+  color: #a5352c;
+}

@@ -1,0 +1,19 @@
+# Base de datos generada por load_data.py (se recrea con un solo comando)
+database/futbol.db
+
+# Entorno virtual
+venv/
+.venv/
+
+# Cache y bytecode de Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Archivos de sistema operativo
+.DS_Store
+Thumbs.db
+
+# Entornos/editores
+.vscode/
+.idea/

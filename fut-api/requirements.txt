@@ -1,0 +1,12 @@
+# Fut-API — dependencias del proyecto
+#
+# sqlite3 no figura acá porque viene incluida en la librería estándar
+# de Python (no se instala con pip).
+#
+# Instalación: pip install -r requirements.txt
+
+flask>=3.0,<4.0
+
+# Solo la usa test_smoke.py para pegarle al servidor por HTTP real.
+# No es una dependencia de la API en sí (main.py / app/ no la importan).
+requests>=2.31,<3.0
