@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { ArtistsRepository } from '../artists/artists.repository.js';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto.js';
+import { assignDefined } from '../common/patch/assign-defined.js';
 import { AlbumsRepository } from './albums.repository.js';
 import { CreateAlbumDto } from './dto/create-album.dto.js';
 import { UpdateAlbumDto } from './dto/update-album.dto.js';
@@ -45,14 +46,12 @@ export class AlbumsService {
     const album = await this.findOne(id);
     if (dto.ArtistId !== undefined) {
       await this.ensureArtistExists(dto.ArtistId);
-      album.artistId = dto.ArtistId;
     }
-    if (dto.Title !== undefined) {
-      album.title = dto.Title;
-    }
-    if (dto.ImageUrl !== undefined) {
-      album.imageUrl = dto.ImageUrl;
-    }
+    assignDefined(album, {
+      artistId: dto.ArtistId,
+      title: dto.Title,
+      imageUrl: dto.ImageUrl,
+    });
     return this.albums.save(album);
   }
 

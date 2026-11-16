@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto.js';
+import { assignDefined } from '../common/patch/assign-defined.js';
 import { ArtistsRepository } from './artists.repository.js';
 import { CreateArtistDto } from './dto/create-artist.dto.js';
 import { UpdateArtistDto } from './dto/update-artist.dto.js';
@@ -39,11 +40,8 @@ export class ArtistsService {
     const artist = await this.findOne(id);
     if (dto.Name !== undefined) {
       await this.ensureNameIsFree(dto.Name, id);
-      artist.name = dto.Name;
     }
-    if (dto.ImageUrl !== undefined) {
-      artist.imageUrl = dto.ImageUrl;
-    }
+    assignDefined(artist, { name: dto.Name, imageUrl: dto.ImageUrl });
     return this.repository.save(artist);
   }
 

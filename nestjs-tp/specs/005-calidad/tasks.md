@@ -74,7 +74,7 @@ sin `[x]`) y `005-Tn` (el arreglo, sin tocar esos tests; con `[x]`) — RNF-4.
       en esos tests.
       Estimación: 30 min · depende de: T5
 
-- [ ] **T7. Refactor del PATCH con red de seguridad.** RF-9 · caso 16
+- [x] **T7. Refactor del PATCH con red de seguridad.** RF-9 · caso 16
       `src/common/patch/assign-defined.ts`; `update()` de artistas, álbumes, géneros y pistas
       lo usan (las verificaciones previas no se mueven).
       Hecho cuando: los 5 gates pasan; `git show --stat` del commit no lista **ningún**

@@ -5,7 +5,7 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 ## Estado actual
 - TP-1 (`001-chinook-nest`) **cerrado, validado y pusheado** (`91124e0`).
 - TP-2 (`002-auth-roles`) **cerrado**: T1–T9 y `validate.md` → APROBADO.
-- TP-5 (`005-calidad`) **en curso**: spec, clarify, plan y tareas aprobados; T1–T6 cerradas. Siguiente: T7 (refactor del PATCH).
+- TP-5 (`005-calidad`) **en curso**: spec, clarify, plan y tareas aprobados; T1–T7 cerradas. Siguiente: `validate.md` (no hecho aún).
 - Tests: `pnpm test` 279 (31 archivos) y `pnpm test:e2e` 380 (17 archivos) en verde; lint sin avisos;
   `pnpm exec tsc --noEmit -p tsconfig.json` también limpio (chequea los tipos de `test/`).
 - Cobertura (unit, todo `src/`): líneas 76,52% (476/622, **146 sin cubrir**) · ramas 80,4%
@@ -97,6 +97,9 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   + 4 e2e que releen lo guardado. Cobertura: 146/49 (igual).
 - `git checkout` de un archivo deja CRLF y Prettier lo marca; su contenido es igual al del repo.
   No commitearlo "arreglado": restaurarlo con `git checkout` y dejarlo afuera.
+- 16/11 · 005-T7: `src/common/patch/assign-defined.ts` (copia lo ≠ undefined; null sí) en los
+  `update()` de artistas, álbumes, géneros y pistas; verificaciones previas sin mover. Commit SIN
+  archivos de test. Sin cubrir: líneas 146 → 144, ramas 49 → 43 (79/88 %→ 76,88 / 81,77 %).
 
 ## Decisiones del plan 002 a recordar en las próximas tareas
 - Guards globales (`APP_GUARD`, autenticación → roles); lo público con `@Public()`.
@@ -121,5 +124,6 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   comprobar el valor y `JSON.stringify`, no `toHaveProperty`.
 
 ## Próximos pasos
-- TP-5: T7 (refactor del PATCH; el commit NO toca tests) según `specs/005-calidad/tasks.md`.
+- TP-5: `validate.md` (VEREDICTO 1.ª línea; tabla RF/caso → test o mutación; aclarar 26 ops) y
+  commit `005: validate — VEREDICTO: …`; luego pedir OK para push.
 - Pendiente para el TP-4: test de modificaciones concurrentes (observación de `001/validate.md`).

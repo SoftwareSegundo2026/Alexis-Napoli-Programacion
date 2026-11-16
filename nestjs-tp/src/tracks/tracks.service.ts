@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { AlbumsRepository } from '../albums/albums.repository.js';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto.js';
+import { assignDefined } from '../common/patch/assign-defined.js';
 import { GenresRepository } from '../genres/genres.repository.js';
 import { CreateTrackDto } from './dto/create-track.dto.js';
 import { UpdateTrackDto } from './dto/update-track.dto.js';
@@ -62,15 +63,16 @@ export class TracksService {
     const track = await this.findOne(id);
     await this.ensureRelatedExist(dto);
 
-    if (dto.Name !== undefined) track.name = dto.Name;
-    if (dto.AlbumId !== undefined) track.albumId = dto.AlbumId;
-    if (dto.MediaTypeId !== undefined) track.mediaTypeId = dto.MediaTypeId;
-    if (dto.GenreId !== undefined) track.genreId = dto.GenreId;
-    if (dto.Composer !== undefined) track.composer = dto.Composer;
-    if (dto.Milliseconds !== undefined) track.milliseconds = dto.Milliseconds;
-    if (dto.Bytes !== undefined) track.bytes = dto.Bytes;
-    if (dto.UnitPrice !== undefined) track.unitPrice = dto.UnitPrice;
-
+    assignDefined(track, {
+      name: dto.Name,
+      albumId: dto.AlbumId,
+      mediaTypeId: dto.MediaTypeId,
+      genreId: dto.GenreId,
+      composer: dto.Composer,
+      milliseconds: dto.Milliseconds,
+      bytes: dto.Bytes,
+      unitPrice: dto.UnitPrice,
+    });
     return this.tracks.save(track);
   }
 

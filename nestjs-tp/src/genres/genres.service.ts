@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto.js';
+import { assignDefined } from '../common/patch/assign-defined.js';
 import { CreateGenreDto } from './dto/create-genre.dto.js';
 import { UpdateGenreDto } from './dto/update-genre.dto.js';
 import { Genre } from './entities/genre.entity.js';
@@ -36,8 +37,8 @@ export class GenresService {
     const genre = await this.findOne(id);
     if (dto.Name !== undefined) {
       await this.ensureNameIsFree(dto.Name, id);
-      genre.name = dto.Name;
     }
+    assignDefined(genre, { name: dto.Name });
     return this.repository.save(genre);
   }
 
