@@ -11,7 +11,8 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 - TP-4 (`004-reservas`) **cerrado**: validate APROBADO; PR #4 mergeado (`c449730`), gates verde
   en main (27 casos límite; RF-14 artista con conciertos → 409; RF-15 = pendiente del TP-1; T8
   agregada por la validación: ids como parámetros).
-- TP-7 (`007-docker-cd`) **en curso** en la rama `tp-7-docker-cd`: spec y clarify aprobados
+- TP-7 (`007-docker-cd`) **validado** en la rama `tp-7-docker-cd`: T1–T8 cerradas, `validate.md`
+  → APROBADO (caso 9 a confirmar en la corrida de main tras el merge). Spec y clarify aprobados
   (17 RF, 7 RNF, 17 casos). Decisiones: SQLite en volumen (un servicio `api`, adaptación
   declarada), sin servidor (deploy SSH solo con secrets; `deploy.sh` probado en Actions con el
   runner como servidor), GHCR, logger JSON propio + `requestId` (AsyncLocalStorage). Sin Docker
