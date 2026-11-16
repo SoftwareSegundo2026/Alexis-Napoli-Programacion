@@ -4,6 +4,7 @@ import { createObserveModule } from '@nestjs/observe';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { AlbumsModule } from './albums/albums.module.js';
+import { AuthModule } from './auth/auth.module.js';
 import { validateEnv } from './config/env.validation.js';
 import { ArtistsModule } from './artists/artists.module.js';
 import { DatabaseModule } from './database/database.module.js';
@@ -64,6 +65,7 @@ export const observeEnabled = observeModule !== undefined;
     AlbumsModule,
     TracksModule,
     UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

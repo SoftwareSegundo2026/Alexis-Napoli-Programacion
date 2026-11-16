@@ -23,7 +23,7 @@ Reglas: una tarea por vez, tests primero (en rojo), gates
       hasher (hash con sal distinto cada vez, verifica bien/mal, lee un hash `$2b$` existente).
       Estimación: 25 min · depende de: T1
 
-- [ ] **T3. Núcleo de autenticación (sin conectar todavía).** RF-1–RF-6, RNF-4
+- [x] **T3. Núcleo de autenticación (sin conectar todavía).** RF-1–RF-6, RNF-4
       `AuthService` (`login`, `issueToken`, `authenticate`), guards de autenticación y de roles,
       decoradores `@Public`, `@Roles`, `@CurrentUser`. No se registran globalmente aún.
       Hecho cuando: `pnpm test` pasa los tests de `AuthService` (casos 1, 2, 4, 5, 11, 12, 21 y

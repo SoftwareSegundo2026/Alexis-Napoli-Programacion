@@ -4,8 +4,8 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 
 ## Estado actual
 - TP-1 (`001-chinook-nest`) **cerrado, validado y pusheado** (`91124e0`).
-- TP-2 (`002-auth-roles`): spec, clarify, plan y tareas aprobados. **T1–T2 hechas**; siguiente: T3.
-- Tests: `pnpm test` 183 (23 archivos) y `pnpm test:e2e` 168 (9 archivos) en verde; lint sin avisos.
+- TP-2 (`002-auth-roles`): spec, clarify, plan y tareas aprobados. **T1–T3 hechas**; siguiente: T4.
+- Tests: `pnpm test` 211 (25 archivos) y `pnpm test:e2e` 168 (9 archivos) en verde; lint sin avisos.
 
 ## Decisiones (y por qué)
 - 15/11 · Base `programacion/nestjs-music`; constitución del docente sin cambios; lint con
@@ -27,6 +27,11 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   `UsersModule` exporta repository y hasher. `bcryptjs` lee los `$2b$` de Python (verificado).
   `UsersRepository` se testea contra una copia REAL de la base (SQL propio: `LOWER(TRIM())`,
   `select: false`, índice único → `DuplicateUserError`).
+- 16/11 · 002-T3: `AuthService` (login con verificación ficticia; `authenticate` con regex
+  `Bearer` sin mayúsculas, HS256 fijo — rechaza `alg: none` —, `sub` numérico, usuario de la
+  base). Guards `AuthenticationGuard` y `RolesGuard` + `@Public`/`@Roles`/`@CurrentUser`.
+  `AuthModule` registrado en `AppModule` pero los guards AÚN no son globales (eso es T4).
+  Tests de `AuthService` con `JwtService` REAL (vencida, alterada, otro secreto, sin firma).
 
 ## Decisiones del plan 002 a recordar en las próximas tareas
 - Guards globales (`APP_GUARD`, autenticación → roles); lo público con `@Public()`.
@@ -49,5 +54,6 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   comprobar el valor y `JSON.stringify`, no `toHaveProperty`.
 
 ## Próximos pasos
-- 002-T3: `AuthService` (login, emitir y verificar credencial), guards y decoradores (sin registrar).
+- 002-T4: guards como `APP_GUARD`, JSON diferido, `WWW-Authenticate`, decorar catálogo y `GET /`,
+  eliminar la clave fija, migrar los tests del TP-1 (helper `test/helpers/auth.ts`).
 - Pendiente para el TP-4: test de modificaciones concurrentes (observación de `001/validate.md`).
