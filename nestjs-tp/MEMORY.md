@@ -5,7 +5,8 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 ## Estado actual
 - TP-1 (`001-chinook-nest`) **cerrado, validado y pusheado** (`91124e0`).
 - TP-2 (`002-auth-roles`) **cerrado**: T1–T9 y `validate.md` → APROBADO.
-- TP-5 (`005-calidad`) **en curso**: spec, clarify, plan y tareas aprobados; **cerrado**: T1–T7 y `validate.md` → APROBADO. Siguiente: TP-6 (CI).
+- TP-5 (`005-calidad`) **en curso**: spec, clarify, plan y tareas aprobados; **cerrado**: T1–T7 y `validate.md` → APROBADO (pusheado).
+- TP-6 (`006-ci`) **en curso**: spec, clarify, plan y tareas aprobados; T1 cerrada. Siguiente: T2.
 - Tests: `pnpm test` 279 (31 archivos) y `pnpm test:e2e` 380 (17 archivos) en verde; lint sin avisos;
   `pnpm exec tsc --noEmit -p tsconfig.json` también limpio (chequea los tipos de `test/`).
 - Cobertura (unit, todo `src/`): líneas 76,52% (476/622, **146 sin cubrir**) · ramas 80,4%
@@ -100,6 +101,12 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 - 16/11 · 005-T7: `src/common/patch/assign-defined.ts` (copia lo ≠ undefined; null sí) en los
   `update()` de artistas, álbumes, géneros y pistas; verificaciones previas sin mover. Commit SIN
   archivos de test. Sin cubrir: líneas 146 → 144, ramas 49 → 43 (líneas 76,88 %, ramas 81,77 %).
+
+- 16/11 · 006-T1: script `typecheck` (= el `tsc --noEmit` de siempre) y `packageManager:
+  pnpm@12.6.0`. pnpm 12 escribe en el lockfile una sección `packageManagerDependencies` con su
+  propia versión e integridad (158 líneas): NO es dependencia de la app; se commitea para que el
+  install congelado de CI coincida. Mutación: error de tipos en `test/` → `typecheck` sale 2.
+- **Desde que `main` quede protegida (TP-6 T3): todo por RAMA + PR** (spec 006 RF-9).
 
 ## Decisiones del plan 002 a recordar en las próximas tareas
 - Guards globales (`APP_GUARD`, autenticación → roles); lo público con `@Public()`.

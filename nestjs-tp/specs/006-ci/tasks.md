@@ -7,7 +7,7 @@ Reglas: una tarea por vez; **5 gates** locales en verde (`pnpm lint && pnpm buil
 `[x]` acá y `MEMORY.md` actualizado. Después, **PARA**. Push siempre con OK del usuario.
 T1–T2 van a `main` (antes de la regla); T3–T4 y el cierre, por rama + PR (RF-9).
 
-- [ ] **T1. Script `typecheck` y versión de pnpm.** RF-4, RNF-7
+- [x] **T1. Script `typecheck` y versión de pnpm.** RF-4, RNF-7
       `package.json`: `"typecheck": "tsc --noEmit -p tsconfig.json"` y
       `"packageManager": "pnpm@12.6.0"`. Sin dependencias nuevas.
       Hecho cuando: `pnpm typecheck` sale con 0; con un error de tipos temporal en un test
