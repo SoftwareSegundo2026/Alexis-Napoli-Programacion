@@ -6,8 +6,9 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 - TP-1 (`001-chinook-nest`) **cerrado, validado y pusheado** (`91124e0`).
 - TP-2 (`002-auth-roles`) **cerrado**: T1–T9 y `validate.md` → APROBADO.
 - TP-5 (`005-calidad`) **en curso**: spec, clarify, plan y tareas aprobados; **cerrado**: T1–T7 y `validate.md` → APROBADO (pusheado).
-- TP-6 (`006-ci`) **en curso**: spec, clarify, plan y tareas aprobados; T1–T4 y `validate.md` → APROBADO; entra a `main`
-  por el PR #2 (lo mergea el usuario). Siguiente: TP-3 (búsqueda), en su propia rama.
+- TP-6 (`006-ci`) **en curso**: spec, clarify, plan y tareas aprobados; **cerrado**: validate APROBADO, PR #2 mergeado (`d452504`).
+- TP-3 (`003-busqueda`) **en curso** en la rama `tp-3-busqueda`: spec, clarify, plan y tareas
+  aprobados; T1 cerrada. Siguiente: T2 (repository contra la base real).
 - Tests: `pnpm test` 279 (31 archivos) y `pnpm test:e2e` 380 (17 archivos) en verde; lint sin avisos;
   `pnpm exec tsc --noEmit -p tsconfig.json` también limpio (chequea los tipos de `test/`).
 - Cobertura (unit, todo `src/`): líneas 76,52% (476/622, **146 sin cubrir**) · ramas 80,4%
@@ -124,6 +125,13 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   un fallo, protección, evidencia). PR #2 (solo docs) → corrida 43892800709 verde (caso 2).
   Búsqueda de secretos (validate): único `.env*` = `.env.example` vacío; 0 tokens en el historial.
 - **`main` está protegida: TODO entra por RAMA + PR que mergea el usuario** (spec 006 RF-9).
+- 16/11 · 003 plan: medición sobre COPIA de la base — índice temporal en precio/duración solo
+  mejora precio exacto (~0,18 ms); SQLite lo descarta en rangos amplios → sin índices nuevos.
+- 16/11 · 003-T1: `common/dto/page.dto.ts` (`Page<T>` + `toPage`: hasMore en un solo lugar);
+  `toStrictInteger` exportada; `toStrictDecimal` (`^\d+(\.\d{1,2})?$`); `@IsNotLessThan` (usa
+  `Reflect.get`, sin cast); `SearchTracksQueryDto` hereda skip/limit. Parámetro repetido → lista →
+  falla su regla de tipo → 400. 41 tests; mutación sin `@IsNotLessThan` → falla su test.
+  Cobertura 144/43 sin cubrir (igual).
 
 ## Decisiones del plan 002 a recordar en las próximas tareas
 - Guards globales (`APP_GUARD`, autenticación → roles); lo público con `@Public()`.

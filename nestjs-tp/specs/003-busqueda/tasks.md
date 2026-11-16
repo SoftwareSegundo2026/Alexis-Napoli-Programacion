@@ -7,7 +7,7 @@ pnpm test && pnpm test:e2e && pnpm test:cov && pnpm typecheck`), un commit `003-
 `tp-3-busqueda`, `[x]` acá y `MEMORY.md` actualizado con la cobertura (líneas/ramas sin cubrir).
 Después, **PARA**. Push de la rama con OK del usuario; entra a `main` por PR (spec 006 RF-9).
 
-- [ ] **T1. Página y validación de los parámetros.** RF-6 (parcial), RF-9, RNF-6 · casos 8, 9, 11, 13, 18, 20
+- [x] **T1. Página y validación de los parámetros.** RF-6 (parcial), RF-9, RNF-6 · casos 8, 9, 11, 13, 18, 20
       `src/common/dto/page.dto.ts` (`Page<T>`, `toPage`); exportar `toStrictInteger`;
       `toStrictDecimal`; decorador mínimo ≤ máximo; `SearchTracksQueryDto` (hereda `skip`/`limit`).
       Hecho cuando: `pnpm test` pasa `page.dto.spec` (`hasMore` con resultados, sin resultados,

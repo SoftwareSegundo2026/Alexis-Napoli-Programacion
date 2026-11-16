@@ -17,7 +17,7 @@ export const MAX_LIMIT = 100;
  * tantas filas, así que el resultado es el mismo: `[]`. En `limit`, el valor
  * topado sigue superando `@Max(100)` → 400.
  */
-function toStrictInteger({ value }: TransformFnParams): unknown {
+export function toStrictInteger({ value }: TransformFnParams): unknown {
   if (typeof value !== 'string' || !/^-?\d+$/.test(value)) {
     return value;
   }
