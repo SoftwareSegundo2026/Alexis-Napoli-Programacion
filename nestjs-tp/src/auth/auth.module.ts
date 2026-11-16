@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { UsersModule } from '../users/users.module.js';
+import { AuthController } from './auth.controller.js';
 import { AuthService } from './auth.service.js';
 import { AuthenticationGuard } from './guards/authentication.guard.js';
 import { RolesGuard } from './guards/roles.guard.js';
@@ -24,6 +25,7 @@ import { RolesGuard } from './guards/roles.guard.js';
       }),
     }),
   ],
+  controllers: [AuthController],
   providers: [
     AuthService,
     // Guards GLOBALES, en este orden: primero quién sos (401), después qué

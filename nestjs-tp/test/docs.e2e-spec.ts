@@ -25,10 +25,15 @@ describe('Documentación interactiva (e2e) — RF-14', () => {
     await app.close();
   });
 
-  /** Operaciones de la API: [ruta, método, operación]. */
+  /**
+   * Operaciones del CATÁLOGO: [ruta, método, operación]. (Desde la spec 002 la
+   * API también tiene login y usuarios; esos se verifican aparte.)
+   */
   function apiOperations() {
     return Object.entries(document.paths)
-      .filter(([path]) => path.startsWith('/api/v1/'))
+      .filter(([path]) =>
+        RESOURCES.some((resource) => path.startsWith(`/api/v1/${resource}`)),
+      )
       .flatMap(([path, item]) =>
         (['get', 'post', 'patch', 'delete', 'put'] as Method[])
           .filter((method) => item[method] !== undefined)
@@ -56,8 +61,15 @@ describe('Documentación interactiva (e2e) — RF-14', () => {
     ).toEqual(['delete', 'get', 'patch']);
   });
 
-  it('en total son exactamente las 20 rutas de la API', () => {
+  it('el catálogo son exactamente 20 rutas', () => {
     expect(apiOperations()).toHaveLength(20);
+  });
+
+  it('documenta el login como operación pública: sin esquema de seguridad (spec 002 RF-5)', () => {
+    const login = document.paths['/api/v1/auth/token']?.post;
+
+    expect(login).toBeDefined();
+    expect(login?.security ?? []).toEqual([]);
   });
 
   it('declara la clave de escritura como header X-API-Key', () => {
@@ -72,7 +84,7 @@ describe('Documentación interactiva (e2e) — RF-14', () => {
     );
   });
 
-  it('las escrituras exigen la clave y las lecturas no', () => {
+  it('en el catálogo las escrituras exigen la clave y las lecturas no', () => {
     for (const { method, operation } of apiOperations()) {
       const requiresKey = (operation.security ?? []).length > 0;
       expect(requiresKey).toBe(WRITE_METHODS.includes(method));

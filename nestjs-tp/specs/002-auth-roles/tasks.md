@@ -40,7 +40,7 @@ Reglas: una tarea por vez, tests primero (en rojo), gates
       22, 24, 25) y **todos** los e2e del TP-1 siguen pasando con la credencial de admin.
       Estimación: 30 min · depende de: T3
 
-- [ ] **T5. Login.** RF-1, RF-2, RNF-1, RNF-4
+- [x] **T5. Login.** RF-1, RF-2, RNF-1, RNF-4
       `POST /auth/token` público, DTO de entrada y de salida (`access_token`, `token_type`).
       Hecho cuando: `pnpm test:e2e` pasa `test/auth.e2e-spec.ts` (casos 1, 2, 9, 10, 11, 20, 21:
       200 con credencial usable, 401 genérico, 400 por cuerpo, dos logins simultáneos).

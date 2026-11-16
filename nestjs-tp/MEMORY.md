@@ -4,8 +4,8 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 
 ## Estado actual
 - TP-1 (`001-chinook-nest`) **cerrado, validado y pusheado** (`91124e0`).
-- TP-2 (`002-auth-roles`): spec, clarify, plan y tareas aprobados. **T1–T4 hechas**; siguiente: T5.
-- Tests: `pnpm test` 204 (25 archivos) y `pnpm test:e2e` 196 (9 archivos) en verde; lint sin avisos;
+- TP-2 (`002-auth-roles`): spec, clarify, plan y tareas aprobados. **T1–T5 hechas**; siguiente: T6.
+- Tests: `pnpm test` 204 (25 archivos) y `pnpm test:e2e` 215 (10 archivos) en verde; lint sin avisos;
   `pnpm exec tsc --noEmit -p tsconfig.json` también limpio (chequea los tipos de `test/`).
 
 ## Decisiones (y por qué)
@@ -42,6 +42,9 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   `security.e2e`; GET libre → `security.e2e` (lecturas públicas); escritura sin credencial → 401
   → `guards.spec` + `security.e2e` (12 rutas); "config sin clave" → `env.validation.spec` (JWT_SECRET).
   Swagger sigue mostrando X-API-Key hasta T8 (documentado en `app.setup.ts`).
+- 16/11 · 002-T5: `POST /auth/token` (@Public, 200). `LoginDto` solo exige textos (vacío → 401, no
+  400). Verificado a mano con el `admin` real de la base (hash de Python, costo 12, ~300 ms).
+  `docs.e2e` ajustado: cuenta las 20 operaciones DEL CATÁLOGO y verifica el login sin seguridad.
 
 ## Decisiones del plan 002 a recordar en las próximas tareas
 - Guards globales (`APP_GUARD`, autenticación → roles); lo público con `@Public()`.
@@ -64,5 +67,5 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   comprobar el valor y `JSON.stringify`, no `toHaveProperty`.
 
 ## Próximos pasos
-- 002-T5: `POST /auth/token` (@Public) + `test/auth.e2e-spec.ts` (casos 1, 2, 9, 10, 11, 20, 21).
+- 002-T6: `GET /users/me`, `GET /users` (admin), `POST /users` (admin, altas serializadas, 409).
 - Pendiente para el TP-4: test de modificaciones concurrentes (observación de `001/validate.md`).
