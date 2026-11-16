@@ -10,7 +10,7 @@ Ninguna tarea aumenta las líneas ni las ramas sin cubrir (RNF-1).
 T4–T6 llevan **dos commits**: `005-Tn (rojo)` (solo los tests nuevos, fallando por el bug;
 sin `[x]`) y `005-Tn` (el arreglo, sin tocar esos tests; con `[x]`) — RNF-4.
 
-- [ ] **T1. Gate de cobertura.** RF-1, RF-2 · casos 1, 2, 18
+- [x] **T1. Gate de cobertura.** RF-1, RF-2 · casos 1, 2, 18
       Bloque `coverage` en `vitest.config.ts`: `include: src/**/*.ts`, `exclude:
       src/**/*.spec.ts`, umbral líneas 75 y ramas 75, reportes `text-summary` y `json-summary`.
       Mutaciones (se revierten y se documentan): umbral de líneas en 80 → falla; un test roto
