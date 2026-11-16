@@ -45,6 +45,10 @@ lerna-debug.log*
 .env.production.local
 .env.local
 
+# Base de trabajo: se crea desde data/chinook.template.db al arrancar (RNF-4)
+/data/chinook.db
+/data/chinook.db-*
+
 # temp directory
 .temp
 .tmp

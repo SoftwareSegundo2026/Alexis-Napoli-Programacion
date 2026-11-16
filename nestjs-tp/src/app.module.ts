@@ -4,6 +4,8 @@ import { createObserveModule } from '@nestjs/observe';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { AlbumsModule } from './albums/albums.module.js';
+import { validateEnv } from './config/env.validation.js';
+import { DatabaseModule } from './database/database.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -12,8 +14,14 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
  * Nest termina de arrancar), así que `process.env` ya tiene los valores en la
  * línea siguiente. Por eso se guarda en una variable: así queda explícito que
  * el `.env` se carga *antes* de decidir si Observe se registra o no.
+ *
+ * `validateEnv` corre en ese mismo momento: sin `WRITE_API_KEY` la aplicación
+ * no arranca (RNF-3).
  */
-const configModule = ConfigModule.forRoot({ isGlobal: true });
+const configModule = ConfigModule.forRoot({
+  isGlobal: true,
+  validate: validateEnv,
+});
 
 /**
  * Registra el módulo de Observe solo si hay credenciales reales de
@@ -43,7 +51,12 @@ const observeModule = observeModuleFromEnv();
 export const observeEnabled = observeModule !== undefined;
 
 @Module({
-  imports: [configModule, ...(observeModule ? [observeModule] : []), AlbumsModule],
+  imports: [
+    configModule,
+    ...(observeModule ? [observeModule] : []),
+    DatabaseModule,
+    AlbumsModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

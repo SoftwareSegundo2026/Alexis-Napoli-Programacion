@@ -7,5 +7,7 @@ export default defineConfig({
     globals: true,
     root: './',
     include: ['**/*.e2e-spec.ts'],
+    // Base temporal y variables de entorno propias de cada archivo e2e (RNF-4).
+    setupFiles: ['./test/setup-e2e.ts'],
   },
 });

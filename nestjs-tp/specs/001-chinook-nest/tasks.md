@@ -6,7 +6,7 @@ Reglas: una tarea por vez, tests primero (en rojo), gates
 `pnpm lint && pnpm build && pnpm test && pnpm test:e2e` en verde, un commit
 `001-Tn: …`, `[x]` acá y `MEMORY.md` actualizado. Después, **PARA**.
 
-- [ ] **T1. Base de datos y configuración.** RNF-3, RNF-4
+- [x] **T1. Base de datos y configuración.** RNF-3, RNF-4
       Dependencias del plan, `allowBuilds` para `better-sqlite3`, template
       `data/chinook.template.db`, validación de entorno (`WRITE_API_KEY` obligatoria),
       módulo de base (`synchronize: false`, copia del template si falta) y helper de

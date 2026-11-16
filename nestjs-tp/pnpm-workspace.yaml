@@ -1,0 +1,6 @@
+# Scripts de instalación que pnpm deja (o no) ejecutar:
+# - better-sqlite3 es un módulo nativo: sin su script no hay binario y la base no abre.
+# - @scarf/scarf (llega con Swagger UI) solo envía telemetría de instalación: se bloquea.
+allowBuilds:
+  '@scarf/scarf': false
+  better-sqlite3: true
