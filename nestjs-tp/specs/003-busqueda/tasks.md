@@ -43,5 +43,15 @@ Después, **PARA**. Push de la rama con OK del usuario; entra a `main` por PR (s
       el `escapeLike` → falla el caso 5 (se revierte y se documenta).
       Estimación: 35 min · depende de: T3
 
-Después de T4: `validate.md` (VEREDICTO en la primera línea; RF/casos → test; plan de consulta;
+- [ ] **T5. Filtros numéricos como parámetros (hallazgo de la validación).** RNF-3
+      La validación encontró que el driver de SQLite de TypeORM escribe como literal todo
+      parámetro `number` (`"GenreId" = 7`). Los filtros numéricos pasan a `CAST(? AS INTEGER)` /
+      `CAST(? AS REAL)` con el valor como texto. Agregada con aprobación del usuario (16/11).
+      Hecho cuando: el test de SQL del repository verifica, para una búsqueda con los 7 filtros,
+      que **ningún** valor de filtro aparece en el SQL y que todos están en los parámetros (en
+      rojo antes del cambio); los tests del oráculo siguen en verde; `EXPLAIN QUERY PLAN` del SQL
+      real sigue usando `IFK_TrackGenreId` e `IFK_AlbumArtistId`; gates en verde.
+      Estimación: 20 min · depende de: T4
+
+Después de T5: `validate.md` (VEREDICTO en la primera línea; RF/casos → test; plan de consulta;
 búsqueda de concatenación en el código), push de la rama con OK, PR y merge por el usuario.

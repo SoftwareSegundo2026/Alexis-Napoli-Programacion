@@ -111,9 +111,15 @@ Cada parámetro admite **un solo valor**: repetido (`genreId=1&genreId=2`) → 4
     versionada). SI el índice mejorara de forma relevante, ENTONCES se replantea esta
     decisión con el usuario antes de implementar.
   - No se modifica la base versionada.
-- **RNF-3:** Cero SQL armado concatenando valores de la query: todo valor viaja como
-  parámetro. Se verifica con un test que inspecciona el SQL generado (el texto de `q` no
-  aparece en él y sí en los parámetros), el e2e de inyección y una búsqueda en el código.
+- **RNF-3:** Cero SQL armado concatenando valores de la query: todo valor **de filtro**
+  (texto y números) viaja como parámetro (`?`). Se verifica con un test que inspecciona el
+  SQL ejecutado (ningún valor de filtro aparece en él y todos están en los parámetros), el
+  e2e de inyección y una búsqueda en el código. *Precisión tras la validación (16/11):* el
+  driver de SQLite de TypeORM escribe como literal todo parámetro de tipo `number`, así que los
+  filtros numéricos se envían como texto con `CAST(? AS INTEGER|REAL)`. `LIMIT` y `OFFSET` los
+  escribe siempre el QueryBuilder de TypeORM como literales (no admite parámetros ahí); se
+  aceptan porque provienen de enteros ya validados por el DTO (`skip`, `limit`), nunca del
+  texto de la URL.
 - **RNF-4:** El contrato del TP-5 cubre el endpoint nuevo (éxito y cada código documentado);
   la cobertura sigue ≥ 75/75 y los gates (y `gates` en CI) en verde.
 - **RNF-5:** El trabajo entra por la rama `tp-3-busqueda` y un PR (spec 006 RF-9).
