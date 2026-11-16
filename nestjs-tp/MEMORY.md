@@ -3,9 +3,9 @@
 Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al terminar **cada tarea**.
 
 ## Estado actual
-- Fase del flujo: `001-chinook-nest` (TP-1) → implementando. **T1–T7 hechas**; siguiente: T8 (Swagger).
+- Fase del flujo: `001-chinook-nest` (TP-1) → implementando. **T1–T8 hechas**; siguiente: T9 (seguridad y cierre).
 - Specs activas: `specs/001-chinook-nest/` (TP-1) · `specs/000-ejemplo-chinook/` (referencia del docente)
-- Tests: `pnpm test` 151 (21 archivos) y `pnpm test:e2e` 101 (7 archivos) en verde; lint sin avisos; build verde.
+- Tests: `pnpm test` 151 (21 archivos) y `pnpm test:e2e` 111 (8 archivos) en verde; lint sin avisos; build verde.
 
 ## Decisiones (y por qué)
 - 15/11 · Base `programacion/nestjs-music`; constitución del docente sin cambios; lint con
@@ -42,6 +42,9 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   lectura en `tracks/entities`. `UnitPrice` con transformer a `Number` (contrato: número JSON).
   Albums y Genres exportan su repository para validar ids. Ninguna pista original está libre
   de referencias ni sin álbum/género: el 204 y el `null` de RF-5 se prueban con pistas nuevas.
+- 16/11 · T8: Swagger en `configureApp` (`/docs`, `/docs-json`), esquema `write-key` (header
+  `X-API-Key`). Decoradores propios en `common/swagger/` (`@ApiWriteOperation`, 400/404/409 con
+  `ErrorResponseDto`). `@ApiProperty` explícito con `type` en los campos `T | null`.
 
 ## Aprendizajes y errores a evitar
 - `ConfigModule.forRoot({ validate })` valida al **importar** `app.module`, no en `init()`.
@@ -52,6 +55,9 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   la clave. Lo registrado con `app.use()` antes de `init()` corre antes del parser (resuelto en T3).
 - En PowerShell, pnpm escribe en stderr aunque salga bien: mirar `$LASTEXITCODE`.
 - `test/app.e2e-spec.ts` (de la base) no pasa `prettier --check`; no se tocó.
+- Correr prettier solo sobre archivos propios: sobre `src/` entero reescribe archivos de la base
+  (pasó en T8; se restauraron con `git checkout`).
 
 ## Próximos pasos
-- T8: Swagger en `/docs` + `/docs-json`, `@ApiProperty` explícito, esquema `X-API-Key`; e2e de las 20 rutas.
+- T9: `test/security.e2e-spec.ts` (401 en las 12 escrituras), README de puesta en marcha, cierre.
+- Después: `/sdd-validate 001-chinook-nest` → `validate.md`.

@@ -1,3 +1,4 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, type TransformFnParams } from 'class-transformer';
 import { IsInt, Max, Min } from 'class-validator';
 
@@ -18,11 +19,24 @@ function toStrictInteger({ value }: TransformFnParams): unknown {
 
 /** Paginación de los listados: `?skip=&limit=` (RF-2, RF-10). */
 export class PaginationQueryDto {
+  @ApiPropertyOptional({
+    type: 'integer',
+    minimum: 0,
+    default: DEFAULT_SKIP,
+    description: 'Cantidad de elementos a omitir',
+  })
   @Transform(toStrictInteger)
   @IsInt()
   @Min(0)
   skip: number = DEFAULT_SKIP;
 
+  @ApiPropertyOptional({
+    type: 'integer',
+    minimum: 1,
+    maximum: MAX_LIMIT,
+    default: DEFAULT_LIMIT,
+    description: 'Máximo de elementos a devolver',
+  })
   @Transform(toStrictInteger)
   @IsInt()
   @Min(1)

@@ -61,7 +61,7 @@ Reglas: una tarea por vez, tests primero (en rojo), gates
       borrado 204 de una pista recién creada).
       Estimación: 30 min · depende de: T6
 
-- [ ] **T8. Documentación interactiva.** RF-14
+- [x] **T8. Documentación interactiva.** RF-14
       Swagger en `/docs` (JSON en `/docs-json`), `@ApiProperty` en los DTOs y esquema de la
       clave de escritura.
       Hecho cuando: `pnpm test:e2e` pasa `test/docs.e2e-spec.ts`, que verifica que el JSON

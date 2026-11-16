@@ -1,3 +1,4 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsInt,
   IsNotEmpty,
@@ -14,6 +15,7 @@ import { Trim } from '../../common/validation/trim.decorator.js';
  * a Title y ArtistId con `@IsOptional`, que deja pasar `null`.
  */
 export class UpdateAlbumDto {
+  @ApiPropertyOptional({ maxLength: 160, description: 'No admite null' })
   @IfPresent()
   @Trim()
   @IsString()
@@ -21,10 +23,20 @@ export class UpdateAlbumDto {
   @MaxLength(160)
   Title?: string;
 
+  @ApiPropertyOptional({
+    type: 'integer',
+    description: 'Debe existir; no admite null',
+  })
   @IfPresent()
   @IsInt()
   ArtistId?: number;
 
+  @ApiPropertyOptional({
+    type: String,
+    nullable: true,
+    maxLength: 500,
+    description: 'null quita la imagen',
+  })
   @IsOptional()
   @Trim()
   @IsString()
