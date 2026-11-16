@@ -47,6 +47,50 @@ los datos originales alcanza con borrar `data/chinook.db`.
 trabajan cada uno sobre una copia temporal de la base (`test/setup-e2e.ts`), así
 que no tocan los datos de desarrollo.
 
+## Integración continua (TP-6)
+
+El workflow [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) (en la raíz del
+repo) corre el job **`gates`** en cada pull request hacia `main` y en cada push a
+`main`, también si el cambio es solo de documentación. Sus pasos, en orden y por
+separado, son los mismos comandos que se corren a mano:
+
+| Paso | Comando | Qué valida |
+|---|---|---|
+| Instalar dependencias | `pnpm install --frozen-lockfile` | Que el lockfile coincida con `package.json` (no lo modifica) |
+| Lint | `pnpm lint` | Estilo y reglas del código (sin `any`, sin `@ts-ignore`) |
+| Build | `pnpm build` | Que la aplicación compile |
+| Unit tests | `pnpm test` | Tests unitarios |
+| E2E tests | `pnpm test:e2e` | La API completa, incluido el contrato de todas las operaciones |
+| Cobertura | `pnpm test:cov` | Líneas y ramas ≥ 75% sobre todo `src/` (spec 005) |
+| Typecheck | `pnpm typecheck` | Tipos de `src/` y `test/` |
+
+**Cómo leer un fallo:** en el PR, "Details" al lado de `gates` muestra la lista de
+pasos; el que falló está en rojo y los siguientes no corren. Si llegó a correr la
+cobertura, su reporte queda como artefacto `cobertura` de la corrida.
+
+**La rama `main` está protegida:** exige el check `gates` en verde, exige pull request
+y no admite excepciones, tampoco para administradores. Todo cambio entra por una rama
+y un PR. El workflow tiene permisos de solo lectura, usa el evento `pull_request` (un
+PR desde un fork corre sin secretos) y no necesita ningún secreto: los tests usan
+valores de prueba propios.
+
+**Evidencia del bloqueo:** el [PR #1](https://github.com/SoftwareSegundo2026/Alexis-Napoli-Programacion/pull/1)
+agrega un test que falla a propósito. Su
+[corrida](https://github.com/SoftwareSegundo2026/Alexis-Napoli-Programacion/actions/runs/43891474309)
+falla en "Unit tests", los pasos siguientes no corren y el merge queda deshabilitado
+aun siendo administrador. Se cerró sin mergear.
+
+![PR #1: el check requerido gates falló y el botón de merge está deshabilitado](docs/evidencias/006-pr-rojo-merge-bloqueado.png)
+
+![Pasos del job gates: Unit tests en rojo; E2E, cobertura y typecheck sin correr](docs/evidencias/006-pr-rojo-pasos.png)
+
+Configuración de la regla:
+[PR obligatorio](docs/evidencias/006-regla-1-pull-request.png) ·
+[check `gates` requerido](docs/evidencias/006-regla-2-check-gates.png) ·
+[sin excepciones](docs/evidencias/006-regla-3-sin-bypass.png) ·
+[permisos del token](docs/evidencias/006-permisos-token.png).
+Detalle completo en [`specs/006-ci/validate.md`](specs/006-ci/validate.md).
+
 ---
 
 ## Cómo arrancar
@@ -122,6 +166,7 @@ y los comandos `/sdd-implement` y `/sdd-validate`.
 3. `specs/NNN-<nombre>/tasks.md` — tareas de 20-30 min con **"Hecho cuando:"**.
 4. Historial git: **un commit por tarea** marcada en `tasks.md`.
 5. `MEMORY.md` actualizado al cierre de cada tarea.
-6. Suite en verde: `pnpm lint && pnpm build && pnpm test && pnpm test:e2e`.
+6. Suite en verde: `pnpm lint && pnpm build && pnpm test && pnpm test:e2e` (y, desde el
+   TP-5/TP-6, `pnpm test:cov` y `pnpm typecheck`; en GitHub los corre el job `gates`).
 
 Ver detalles y pesos en [`rubrica/rubrica-entrega.md`](rubrica/rubrica-entrega.md).
