@@ -6,7 +6,7 @@ Reglas: una tarea por vez, tests primero (en rojo), gates en verde (`lint`, `bui
 `test:e2e`, `test:cov`, `typecheck`), un commit `004-Tn: …` en la rama `tp-4-reservas`, `[x]` y
 `MEMORY.md`. Push con OK; entra a `main` por PR.
 
-- [ ] **T1. Infraestructura de base.** RNF-4
+- [x] **T1. Infraestructura de base.** RNF-4
       `migrations.ts` (Concert, Reservation, Payment, índices; idempotente), `prepareConnection`
       (funciones SQL + migraciones) en `DatabaseModule`, `TransactionLock`, `Clock`.
       Hecho cuando: `pnpm test` pasa: migración sobre una copia real crea las 3 tablas y correrla dos

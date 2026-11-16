@@ -1,9 +1,11 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule, type TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { fileURLToPath } from 'node:url';
+import { Clock } from './clock.js';
+import { prepareConnection } from './prepare-connection.js';
 import { prepareDatabase } from './prepare-database.js';
-import { registerSqlFunctions } from './sql-functions.js';
+import { TransactionLock } from './transaction-lock.js';
 
 /**
  * Copia versionada de la Chinook del docente. Se resuelve relativa a este
@@ -31,11 +33,16 @@ export const TEMPLATE_DATABASE_PATH = fileURLToPath(
           autoLoadEntities: true,
           // Es un archivo local: reintentar no arregla nada y solo demora el error.
           retryAttempts: 0,
-          // Funciones SQL propias (unicode_lower), en cada conexión que se abre.
-          prepareDatabase: registerSqlFunctions,
+          // En cada conexión que se abre: funciones SQL propias (unicode_lower)
+          // y la migración en código de la spec 004 (tablas de reservas).
+          prepareDatabase: prepareConnection,
         };
       },
     }),
   ],
+  // Global: el candado de transacciones y el reloj son únicos para toda la app.
+  providers: [TransactionLock, Clock],
+  exports: [TransactionLock, Clock],
 })
+@Global()
 export class DatabaseModule {}

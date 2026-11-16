@@ -10,7 +10,13 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 - TP-3 (`003-busqueda`) **cerrado**: validate APROBADO; PR #3 mergeado (`dd511e1`), gates verde.
 - TP-4 (`004-reservas`) **en curso** en la rama `tp-4-reservas`: spec y clarify aprobados
   (27 casos límite; RF-14 artista con conciertos → 409; RF-15 = pendiente de concurrencia del TP-1).
-  Siguiente: plan (clave: better-sqlite3 usa UNA conexión → serializar transacciones).
+  Plan y tareas aprobados (7 tareas); T1 cerrada. Siguiente: T2 (conciertos).
+- 16/11 · 004 plan: TypeORM 1.1.3 con better-sqlite3 usa UNA conexión (`queryRunner ??=`) y una
+  transacción abierta dentro de otra es un SAVEPOINT → `TransactionLock` (FIFO) para reservas.
+- 16/11 · 004-T1: `migrations.ts` (Concert/Reservation/Payment, `IF NOT EXISTS`, índice único
+  `(UserId, IdempotencyKey)`), `prepareConnection` (sql-functions + migraciones) en
+  `DatabaseModule` (ahora `@Global` con `TransactionLock` y `Clock`). Las CLAVES FORÁNEAS SE
+  HACEN CUMPLIR (TypeORM activa `foreign_keys`): en tests usar usuarios reales.
 - Tests: `pnpm test` 360 y `pnpm test:e2e` 413 en verde (rama `tp-3-busqueda`).
 - Tests: `pnpm test` 279 (31 archivos) y `pnpm test:e2e` 380 (17 archivos) en verde; lint sin avisos;
   `pnpm exec tsc --noEmit -p tsconfig.json` también limpio (chequea los tipos de `test/`).
