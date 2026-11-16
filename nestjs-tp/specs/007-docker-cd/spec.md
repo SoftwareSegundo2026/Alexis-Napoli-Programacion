@@ -96,7 +96,9 @@ archivo no se puede leer como base o la conexión está cerrada (decisión 1; ve
   compose, una carpeta de despliegue con el `.env` de producción (nunca sale del repo) y el
   usuario SSH con permiso para usar Docker. Como el repo es público, la imagen se baja sin
   credencial; si el paquete fuera privado, el README indica el `docker login ghcr.io` con un token
-  de solo lectura.
+  de solo lectura. *Corrección tras el merge:* el paquete **es** privado, porque la organización
+  no admite paquetes públicos. El servidor hace `docker login` una vez, y en una máquina sin
+  credenciales la API se levanta construyendo desde el código (`docker compose up -d --build --wait`).
 
 **Observabilidad**
 

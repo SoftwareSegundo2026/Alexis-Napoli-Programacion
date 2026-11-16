@@ -1,4 +1,19 @@
-VEREDICTO: APROBADO (el caso 9 —publicar en `main` sin secrets de servidor— se confirma en la corrida de `main` tras el merge)
+VEREDICTO: APROBADO
+
+> **Actualización tras el merge (PR #5, `ece9aab`):**
+> - **Caso 9 confirmado** en la [corrida de `main`](https://github.com/SoftwareSegundo2026/Alexis-Napoli-Programacion/actions/runs/43919954077):
+>   - `image` verde, y esta vez guardó la imagen probada.
+>   - `publish` verde: subió la imagen a `ghcr.io` con el sha y `latest`.
+>   - `deploy` verde: el paso "Desplegar por SSH" se salteó porque no hay secrets de servidor.
+> - **Hallazgo:** el paquete quedó **privado**. La organización tiene deshabilitados los paquetes
+>   públicos (y los internos), así que una descarga anónima responde `DENIED`. El README decía
+>   que "hereda la visibilidad del repo", y era falso. Se corrigió en el PR `tp-7-ajustes`:
+>   - `docker-compose.yml` suma `build: .`: en una máquina sin credenciales alcanza con un solo
+>     comando, `docker compose up -d --build --wait`. El workflow lo prueba en cada corrida
+>     (paso "Un solo comando desde el código").
+>   - El README explica los dos caminos: desde el código, o la imagen publicada con
+>     `docker login ghcr.io` y un token `read:packages`.
+>   - En el servidor, `docker login` se hace una vez (RF-17).
 
 # Validación 007 — Docker, despliegue continuo y observabilidad (TP-7)
 
@@ -39,8 +54,8 @@ Insumos: `spec.md`, `clarify.md`, `plan.md`, `tasks.md`, `MEMORY.md`, `docs/cons
 | RF-5 `/health` real, 200/503 con `detail` | `health.e2e` (200 sin credencial; 503 con la conexión real cerrada); `health.spec` (consulta `sqlite_master`, no `SELECT 1`); contrato 200 y 503; caso 12 en Docker | OK |
 | RF-6 variable inválida → no arranca y la nombra | `env.validation.spec` (`LOG_LEVEL=loud`); caso 5 en Docker (`JWT_SECRET` corto y `LOG_LEVEL=loud`) | OK |
 | RF-7 base que no abre → error claro, nunca `healthy` | App compilada local: `fatal` "file is not a database" y código 1 (`abortOnError: false`). Caso 1 en Docker | OK |
-| RF-8 publicar en `ghcr.io` con sha y `latest`, no en PR | Job `publish` (solo push a `main`, `packages: write`, publica la imagen probada). En el PR quedó salteado | OK en PR · publicación: caso 9 tras el merge |
-| RF-9 deploy por SSH con `deploy.sh`, espera `healthy`, en fila, salteado sin secrets | `deploy.sh` probado en Actions (caso 12: tres despliegues `healthy`; caso 17: falla y muestra logs). Job `deploy` con `concurrency: deploy` y validación del tag | OK · salteo sin secrets: caso 9 tras el merge |
+| RF-8 publicar en `ghcr.io` con sha y `latest`, no en PR | Job `publish` (solo push a `main`, `packages: write`, publica la imagen probada). En el PR quedó salteado | OK (publicado en la corrida de `main` 43919954077) |
+| RF-9 deploy por SSH con `deploy.sh`, espera `healthy`, en fila, salteado sin secrets | `deploy.sh` probado en Actions (caso 12: tres despliegues `healthy`; caso 17: falla y muestra logs). Job `deploy` con `concurrency: deploy` y validación del tag | OK (salteo sin secrets confirmado en `main`) |
 | RF-10 rollback sin reconstruir | Caso 12: ci-v1 → ci-v2 → ci-v1. `workflow_dispatch` con `tag`. README | OK |
 | RF-11 una línea JSON por evento, sin `console.log` | `json-logger.spec`; app compilada (todas las líneas JSON); `grep console.*` en `src/`: ninguno | OK |
 | RF-12 línea por pedido, nivel por código, `/health` en debug | `request-context.spec` (niveles, ruta sin query, duración); `observability.e2e` (casos 4, 14, 15, 404 → warn) | OK |
@@ -74,7 +89,7 @@ Insumos: `spec.md`, `clarify.md`, `plan.md`, `tasks.md`, `MEMORY.md`, `docs/cons
 | 6 | `smoke-test.sh` "OK caso 6" (reinicio del daemon) | 15 | `observability.e2e` + `json-logger.spec` |
 | 7 | `observability.e2e` | 16 | `shutdown-logger.spec` + `smoke-test.sh` "OK caso 16" |
 | 8 | `observability.e2e` + `request-context.spec` | 17 | `smoke-test.sh` "OK caso 17" |
-| 9 | **Pendiente:** corrida de `main` tras el merge (`publish` publica; `deploy` muestra el aviso y queda verde) | | |
+| 9 | Corrida de `main` 43919954077: `publish` verde y `deploy` verde con el SSH salteado (confirmado tras el merge) | | |
 
 ## Consigna
 
@@ -90,7 +105,7 @@ Insumos: `spec.md`, `clarify.md`, `plan.md`, `tasks.md`, `MEMORY.md`, `docs/cons
 | Observe opcional con credenciales | RF-15 (se mantiene el comportamiento previo) |
 | Los 4 gates también dentro del build de la imagen | RF-1; log de la corrida |
 | Los 5 casos de la consigna | Casos 1, 3, 4, 5 y 6 de la spec |
-| Una máquina limpia con un comando, en el README | README: `docker compose up -d --wait` |
+| Una máquina limpia con un comando, en el README | README: `docker compose up -d --build --wait` (sin credenciales; probado en el workflow) o `docker compose up -d --wait` tras `docker login ghcr.io` |
 | CD sin intervención y rollback documentado | README "Rollback" + caso 12 |
 | "¿Qué pasó a las 3 AM?" | README: filtros de `docker compose logs` con `jq` por hora, nivel y `requestId` |
 | `docker history` limpio, nada en el historial de git | Caso 11; ningún `.env` versionado |
@@ -134,8 +149,8 @@ usuario para T5–T8.
    simultáneas a propósito) y ya estaba anotado.
 4. **Logs de Actions:** la API de GitHub solo entrega logs a administradores. La evidencia
    detallada sale del zip descargado desde la web; su extracto quedó versionado.
-5. **GHCR en la organización:** si la organización no permite crear paquetes con el token de
-   las corridas, `publish` fallaría en `main`. No afecta a `gates`; se resuelve en la
-   configuración de la organización.
+5. **GHCR en la organización:** crear el paquete con el token de las corridas **funcionó**.
+   Hacerlo público **no está permitido** por la organización (ver la actualización al
+   principio).
 6. **Pendiente heredado:** los demás repositories del catálogo siguen escribiendo ids como
    literales en el SQL (observación del TP-3 y del TP-4).

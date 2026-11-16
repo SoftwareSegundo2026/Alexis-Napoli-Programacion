@@ -86,6 +86,21 @@ jobs:
       - name: Casos límite contra Docker real
         run: bash deploy/smoke-test.sh "$IMAGE:a"
 
+      # El camino del README para una máquina sin credenciales de ghcr.io: un solo
+      # comando que construye desde el código y espera healthy (criterio de la consigna).
+      - name: Un solo comando desde el código (docker compose up --build)
+        env:
+          COMPOSE_PROJECT_NAME: chinook-un-comando
+          IMAGE_TAG: un-comando
+          API_PORT: "3302"
+        run: |
+          docker compose up -d --build --wait --wait-timeout 90
+          body="$(curl --silent --fail http://127.0.0.1:3302/health)"
+          echo "GET /health → $body"
+          docker compose down --volumes
+          [[ "$body" == '{"status":"ok","database":"up"}' ]] || exit 1
+          echo "OK: docker compose up -d --build --wait deja la API healthy"
+
       # Se publica exactamente la imagen probada: se guarda para el job publish.
       - name: Guardar la imagen probada
         if: github.event_name == 'push'

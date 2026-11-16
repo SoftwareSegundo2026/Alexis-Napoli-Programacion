@@ -2,7 +2,10 @@
 # que vive en el volumen `chinook-data` (ver "Adaptaciones a la consigna" en la
 # spec: no hay un servidor de base del cual depender).
 #
-# Uso: con Docker y un .env (ver .env.example) →  docker compose up -d --wait
+# Uso, con Docker y un .env (ver .env.example):
+#   docker compose up -d --build --wait   construye la imagen desde el código (sin credenciales)
+#   docker compose up -d --wait           usa la imagen publicada en ghcr.io (paquete privado:
+#                                         antes, docker login ghcr.io; ver el README)
 # Versión: IMAGE_TAG=<sha del commit> (por defecto latest). El rollback es
 # volver a levantar con el sha anterior (ver deploy/deploy.sh y el README).
 name: chinook
@@ -10,6 +13,9 @@ name: chinook
 services:
   api:
     image: ghcr.io/softwaresegundo2026/alexis-napoli-programacion:${IMAGE_TAG:-latest}
+    # Solo con --build: el mismo Dockerfile (con los gates adentro). En el
+    # servidor no se usa: deploy.sh baja la imagen publicada y probada.
+    build: .
     # Secretos y configuración del entorno (JWT_SECRET, LOG_LEVEL…). Nunca en la imagen.
     env_file: .env
     # Fijos dentro del contenedor (le ganan al .env): el healthcheck y el volumen
