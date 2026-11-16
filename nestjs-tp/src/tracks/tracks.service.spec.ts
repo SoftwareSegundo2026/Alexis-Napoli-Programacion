@@ -7,6 +7,7 @@ import { Test } from '@nestjs/testing';
 import { AlbumsRepository } from '../albums/albums.repository.js';
 import { GenresRepository } from '../genres/genres.repository.js';
 import { CreateTrackDto } from './dto/create-track.dto.js';
+import { SearchTracksQueryDto } from './dto/search-tracks-query.dto.js';
 import { Track } from './entities/track.entity.js';
 import { TracksRepository } from './tracks.repository.js';
 import { TracksService } from './tracks.service.js';
@@ -46,6 +47,7 @@ describe('TracksService', () => {
     create: vi.fn(),
     save: vi.fn(),
     delete: vi.fn(),
+    search: vi.fn(),
   };
   const albums = { findById: vi.fn() };
   const genres = { findById: vi.fn() };
@@ -192,5 +194,42 @@ describe('TracksService', () => {
         expect(tracks.delete).not.toHaveBeenCalled();
       },
     );
+  });
+
+  describe('search (spec 003 RF-6)', () => {
+    const query = Object.assign(new SearchTracksQueryDto(), {
+      q: 'love',
+      genreId: 1,
+      skip: 0,
+      limit: 2,
+    });
+
+    it('pasa los filtros al repository y arma la página con hasMore', async () => {
+      const found = [track({ id: 1 }), track({ id: 2 })];
+      tracks.search.mockResolvedValue({ items: found, total: 5 });
+
+      const page = await service.search(query);
+
+      expect(tracks.search).toHaveBeenCalledWith(query);
+      expect(page).toEqual({
+        items: found,
+        total: 5,
+        skip: 0,
+        limit: 2,
+        hasMore: true,
+      });
+    });
+
+    it('sin resultados → página vacía y hasMore false (RF-7)', async () => {
+      tracks.search.mockResolvedValue({ items: [], total: 0 });
+
+      await expect(service.search(query)).resolves.toEqual({
+        items: [],
+        total: 0,
+        skip: 0,
+        limit: 2,
+        hasMore: false,
+      });
+    });
   });
 });

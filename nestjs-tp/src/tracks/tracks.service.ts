@@ -5,10 +5,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { AlbumsRepository } from '../albums/albums.repository.js';
+import { toPage, type Page } from '../common/dto/page.dto.js';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto.js';
 import { assignDefined } from '../common/patch/assign-defined.js';
 import { GenresRepository } from '../genres/genres.repository.js';
 import { CreateTrackDto } from './dto/create-track.dto.js';
+import { SearchTracksQueryDto } from './dto/search-tracks-query.dto.js';
 import { UpdateTrackDto } from './dto/update-track.dto.js';
 import { Track } from './entities/track.entity.js';
 import { TracksRepository } from './tracks.repository.js';
@@ -34,6 +36,16 @@ export class TracksService {
 
   findAll({ skip, limit }: PaginationQueryDto): Promise<Track[]> {
     return this.tracks.findPage(skip, limit);
+  }
+
+  /**
+   * Búsqueda con filtros combinados (spec 003). Los filtros ya vienen validados
+   * por el DTO (RF-9); el repository resuelve todo en la base y acá se arma la
+   * página con los metadatos (RF-6).
+   */
+  async search(query: SearchTracksQueryDto): Promise<Page<Track>> {
+    const { items, total } = await this.tracks.search(query);
+    return toPage(items, total, query.skip, query.limit);
   }
 
   async findOne(id: number): Promise<Track> {

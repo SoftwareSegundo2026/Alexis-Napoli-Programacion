@@ -1,6 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { unicodeLower } from '../database/sql-functions.js';
+import type {
+  SortOrder,
+  TrackSortField,
+} from './dto/search-tracks-query.dto.js';
+import { escapeLike } from './escape-like.js';
 import { InvoiceLine } from './entities/invoice-line.entity.js';
 import { MediaType } from './entities/media-type.entity.js';
 import { PlaylistTrack } from './entities/playlist-track.entity.js';
@@ -26,6 +32,33 @@ export interface TrackReferences {
 
 const WITH_NAMES = { album: true, genre: true, mediaType: true } as const;
 
+/** Filtros, orden y página de una búsqueda (ya validados por el DTO, spec 003 RF-9). */
+export interface TrackSearchFilters {
+  q?: string;
+  genreId?: number;
+  artistId?: number;
+  minPrice?: number;
+  maxPrice?: number;
+  minMs?: number;
+  maxMs?: number;
+  sort: TrackSortField;
+  order: SortOrder;
+  skip: number;
+  limit: number;
+}
+
+/**
+ * Expresión SQL de cada campo de orden (whitelist, spec 003 RF-5). El valor que
+ * manda el cliente solo ELIGE una clave de este mapa: nunca llega al SQL.
+ * `name` ordena sin distinguir mayúsculas, con la misma regla del texto (RF-5).
+ */
+const SORT_COLUMNS: Record<TrackSortField, string> = {
+  trackId: 'track.id',
+  name: 'unicode_lower(track.name)',
+  unitPrice: 'track.unitPrice',
+  milliseconds: 'track.milliseconds',
+};
+
 /** DAO de pistas: el único lugar que habla con la base para este recurso. */
 @Injectable()
 export class TracksRepository {
@@ -47,6 +80,82 @@ export class TracksRepository {
       order: { id: 'ASC' },
       relations: WITH_NAMES,
     });
+  }
+
+  /**
+   * Búsqueda con filtros combinados (spec 003). Todo se resuelve EN LA BASE: una
+   * consulta con la página (LIMIT/OFFSET) y otra con el total (COUNT), RNF-1.
+   * Todo valor de filtro viaja como parámetro (`?`), nunca concatenado (RNF-3);
+   * LIMIT/OFFSET los escribe el QueryBuilder a partir de enteros ya validados.
+   * LEFT JOIN: una pista sin álbum o sin género no desaparece (RF-10).
+   */
+  async search(
+    filters: TrackSearchFilters,
+  ): Promise<{ items: Track[]; total: number }> {
+    const query = this.tracks
+      .createQueryBuilder('track')
+      .leftJoinAndSelect('track.album', 'album')
+      .leftJoinAndSelect('track.genre', 'genre')
+      .leftJoinAndSelect('track.mediaType', 'mediaType');
+
+    if (filters.q !== undefined) {
+      // Contiene el texto, sin distinguir mayúsculas (RF-2) y con % y _ literales (RF-8).
+      query.andWhere(
+        "(unicode_lower(track.name) LIKE :q ESCAPE '\\' OR unicode_lower(track.composer) LIKE :q ESCAPE '\\')",
+        { q: `%${escapeLike(String(unicodeLower(filters.q)))}%` },
+      );
+    }
+    // Filtros numéricos: el valor va como TEXTO y el SQL lo convierte con CAST,
+    // porque el driver de SQLite de TypeORM escribe como literal todo parámetro
+    // `number` ("GenreId" = 7). Así también los números viajan como `?` (RNF-3).
+    if (filters.genreId !== undefined) {
+      query.andWhere('track.genreId = CAST(:genreId AS INTEGER)', {
+        genreId: String(filters.genreId),
+      });
+    }
+    if (filters.artistId !== undefined) {
+      // El artista es el del álbum: una pista sin álbum no coincide (RF-4).
+      query.andWhere('album.artistId = CAST(:artistId AS INTEGER)', {
+        artistId: String(filters.artistId),
+      });
+    }
+    if (filters.minPrice !== undefined) {
+      query.andWhere('track.unitPrice >= CAST(:minPrice AS REAL)', {
+        minPrice: String(filters.minPrice),
+      });
+    }
+    if (filters.maxPrice !== undefined) {
+      query.andWhere('track.unitPrice <= CAST(:maxPrice AS REAL)', {
+        maxPrice: String(filters.maxPrice),
+      });
+    }
+    if (filters.minMs !== undefined) {
+      query.andWhere('track.milliseconds >= CAST(:minMs AS INTEGER)', {
+        minMs: String(filters.minMs),
+      });
+    }
+    if (filters.maxMs !== undefined) {
+      query.andWhere('track.milliseconds <= CAST(:maxMs AS INTEGER)', {
+        maxMs: String(filters.maxMs),
+      });
+    }
+
+    query.orderBy(
+      SORT_COLUMNS[filters.sort],
+      filters.order === 'desc' ? 'DESC' : 'ASC',
+    );
+    // Desempate fijo por id: páginas estables, sin repetidos ni huecos (RF-5).
+    // Solo si el orden no ES ya por id: TypeORM guarda el orden por columna, y un
+    // segundo "track.id ASC" pisaría a un "track.id DESC" pedido por el cliente.
+    if (filters.sort !== 'trackId') {
+      query.addOrderBy('track.id', 'ASC');
+    }
+
+    const [items, total] = await query
+      .offset(filters.skip)
+      .limit(filters.limit)
+      .getManyAndCount();
+    return { items, total };
   }
 
   findById(id: number): Promise<Track | null> {

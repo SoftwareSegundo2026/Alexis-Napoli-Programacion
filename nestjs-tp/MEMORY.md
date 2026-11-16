@@ -6,8 +6,11 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 - TP-1 (`001-chinook-nest`) **cerrado, validado y pusheado** (`91124e0`).
 - TP-2 (`002-auth-roles`) **cerrado**: T1–T9 y `validate.md` → APROBADO.
 - TP-5 (`005-calidad`) **en curso**: spec, clarify, plan y tareas aprobados; **cerrado**: T1–T7 y `validate.md` → APROBADO (pusheado).
-- TP-6 (`006-ci`) **en curso**: spec, clarify, plan y tareas aprobados; T1–T4 y `validate.md` → APROBADO; entra a `main`
-  por el PR #2 (lo mergea el usuario). Siguiente: TP-3 (búsqueda), en su propia rama.
+- TP-6 (`006-ci`) **en curso**: spec, clarify, plan y tareas aprobados; **cerrado**: validate APROBADO, PR #2 mergeado (`d452504`).
+- TP-3 (`003-busqueda`) **en curso** en la rama `tp-3-busqueda`: spec, clarify, plan y tareas
+  aprobados; T1–T5 cerradas (T5 nació en la validación); `validate.md` → APROBADO.
+  Siguiente: push de la rama → PR → merge del usuario. Después: TP-4 (reservas) en su rama.
+- Tests: `pnpm test` 360 y `pnpm test:e2e` 413 en verde (rama `tp-3-busqueda`).
 - Tests: `pnpm test` 279 (31 archivos) y `pnpm test:e2e` 380 (17 archivos) en verde; lint sin avisos;
   `pnpm exec tsc --noEmit -p tsconfig.json` también limpio (chequea los tipos de `test/`).
 - Cobertura (unit, todo `src/`): líneas 76,52% (476/622, **146 sin cubrir**) · ramas 80,4%
@@ -124,6 +127,37 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   un fallo, protección, evidencia). PR #2 (solo docs) → corrida 43892800709 verde (caso 2).
   Búsqueda de secretos (validate): único `.env*` = `.env.example` vacío; 0 tokens en el historial.
 - **`main` está protegida: TODO entra por RAMA + PR que mergea el usuario** (spec 006 RF-9).
+- 16/11 · 003 plan: medición sobre COPIA de la base — índice temporal en precio/duración solo
+  mejora precio exacto (~0,18 ms); SQLite lo descarta en rangos amplios → sin índices nuevos.
+- 16/11 · 003-T1: `common/dto/page.dto.ts` (`Page<T>` + `toPage`: hasMore en un solo lugar);
+  `toStrictInteger` exportada; `toStrictDecimal` (`^\d+(\.\d{1,2})?$`); `@IsNotLessThan` (usa
+  `Reflect.get`, sin cast); `SearchTracksQueryDto` hereda skip/limit. Parámetro repetido → lista →
+  falla su regla de tipo → 400. 41 tests; mutación sin `@IsNotLessThan` → falla su test.
+  Cobertura 144/43 sin cubrir (igual).
+- 16/11 · 003-T2: `escapeLike` + `TracksRepository.search` (QueryBuilder, LEFT JOIN, parámetros
+  nombrados, mapa fijo `SORT_COLUMNS`, `offset/limit` + `getManyAndCount`). Test contra copia REAL
+  con ORÁCULO en memoria + `RecordingLogger` (SQL con LIMIT/OFFSET, COUNT aparte, `q` solo en
+  parámetros). El oráculo halló un BUG: `orderBy('track.id' DESC)` + `addOrderBy('track.id' ASC)`
+  → TypeORM indexa el orden por columna y el 2.º pisa al 1.º; desempate solo si sort ≠ trackId.
+  Chinook YA tiene "100% HardCore" (no asumir que una búsqueda solo trae lo sembrado).
+  Cobertura: 135/42 sin cubrir (antes 144/43).
+- 16/11 · 003-T3: `TracksService.search` (→ `toPage`), `@Get('search')` ANTES de `:id` (en rojo,
+  "search" caía en `:id` → 400), `TrackSearchPageDto` (Swagger no documenta genéricos), forma
+  `page` en `shapes.ts` + 2 casos de contrato. **Tests viejos ACTUALIZADOS (no borrados ni
+  debilitados)** porque fijaban la cantidad de operaciones: `protection.e2e` (+`GET
+  /tracks/search` en PUBLIC_OPERATIONS, que exige cambio de spec: lo es la 003; 25 → 26) y
+  `docs.e2e` (catálogo 20 → 21, total 25 → 26). Cobertura 143/42 (+8 líneas: controller sin
+  unit test, cubierto por e2e); 78,56% ≥ 75.
+- 16/11 · 003-T4: `test/tracks-search.e2e-spec.ts` (31 tests: los 21 casos de la spec + variantes,
+  y RF-12: `/docs-json` declara los 11 parámetros con su tipo). Datos propios creados por la API en
+  `beforeAll` (total esperado = 3503 + 7). Mutación sin `escapeLike` → falla el caso 5 (e2e) y 3
+  tests del repository. `typecheck` atrapó un error de tipos en `it.each` que Vitest dejó pasar.
+- 16/11 · 003-T5 (**hallazgo de la validación**): el driver de SQLite de TypeORM
+  (`AbstractSqliteDriver.escapeQueryWithParameters`) escribe como LITERAL todo parámetro `number`
+  → `"GenreId" = 7`. Arreglo: valor como texto + `CAST(? AS INTEGER|REAL)`; EXPLAIN igual (sigue
+  usando IFK_TrackGenreId / IFK_AlbumArtistId). `LIMIT/OFFSET` los escribe SIEMPRE el
+  QueryBuilder (RNF-3 precisado). Test nuevo con 7 filtros: ningún valor en el SQL. OJO en
+  TP-4: los demás repositories (findById, etc.) también inlinean ids numéricos (fuera del TP-3).
 
 ## Decisiones del plan 002 a recordar en las próximas tareas
 - Guards globales (`APP_GUARD`, autenticación → roles); lo público con `@Public()`.

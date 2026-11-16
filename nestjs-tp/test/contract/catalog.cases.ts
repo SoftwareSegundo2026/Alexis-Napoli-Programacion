@@ -7,6 +7,7 @@ import {
   GENRE,
   list,
   object,
+  page,
   TEXT,
   TRACK,
   type Shape,
@@ -297,4 +298,24 @@ export const CATALOG_CASES: readonly ContractCase[] = [
     invalidUpdate: { Milliseconds: 0 },
     inUseId: 1, // está en facturas y playlists
   }),
+  // Buscador de pistas (spec 003): página con metadatos — 200 400
+  {
+    operation: `GET ${API}/tracks/search`,
+    status: 200,
+    name: 'búsqueda con filtros',
+    expected: page(TRACK),
+    send: async (c) =>
+      c
+        .http()
+        .get(`${API}/tracks/search`)
+        .query({ q: 'love', genreId: 1, sort: 'unitPrice', order: 'desc' }),
+  },
+  {
+    operation: `GET ${API}/tracks/search`,
+    status: 400,
+    name: 'orden fuera de la whitelist',
+    expected: ERROR_BODY,
+    send: async (c) =>
+      c.http().get(`${API}/tracks/search`).query({ sort: 'campo_hackers' }),
+  },
 ];

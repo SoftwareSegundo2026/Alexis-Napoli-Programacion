@@ -61,8 +61,9 @@ describe('Documentación interactiva (e2e) — RF-14', () => {
     ).toEqual(['delete', 'get', 'patch']);
   });
 
-  it('el catálogo son exactamente 20 rutas', () => {
-    expect(apiOperations()).toHaveLength(20);
+  // 20 hasta el TP-2; 21 desde la spec 003 (GET /tracks/search).
+  it('el catálogo son exactamente 21 rutas', () => {
+    expect(apiOperations()).toHaveLength(21);
   });
 
   it('documenta el login como operación pública: sin esquema de seguridad (spec 002 RF-5)', () => {
@@ -108,7 +109,8 @@ describe('Documentación interactiva (e2e) — RF-14', () => {
     }
   });
 
-  it('en total la API son 25 operaciones: 20 del catálogo, el login y 4 de usuarios', () => {
+  // 25 hasta el TP-2; 26 desde la spec 003 (el buscador es la operación 21 del catálogo).
+  it('en total la API son 26 operaciones: 21 del catálogo, el login y 4 de usuarios', () => {
     const all = Object.entries(document.paths)
       .filter(([path]) => path.startsWith('/api/v1/'))
       .flatMap(([, item]) =>
@@ -117,7 +119,7 @@ describe('Documentación interactiva (e2e) — RF-14', () => {
         ),
       );
 
-    expect(all).toHaveLength(25);
+    expect(all).toHaveLength(26);
   });
 
   it('el esquema de usuario no expone la contraseña ni el hash (RNF-1)', () => {
