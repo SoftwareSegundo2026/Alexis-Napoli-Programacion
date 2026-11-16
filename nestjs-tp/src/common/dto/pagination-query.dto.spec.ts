@@ -58,6 +58,29 @@ describe('PaginationQueryDto (RF-2, RF-10)', () => {
     },
   );
 
+  // Spec 005 RF-6 (bug 1): el tamaño de skip nunca da 400 ni 500. Un skip más
+  // grande que cualquier tabla equivale a "después del final": se topa en el
+  // mayor entero seguro, que SQLite entiende (por encima de 2^63 falla → 500).
+  it.each([
+    ['20 dígitos', '9'.repeat(20)],
+    ['400 dígitos', '9'.repeat(400)],
+  ])(
+    'skip de %s se acepta, topado en Number.MAX_SAFE_INTEGER (RF-6)',
+    async (_label, skip) => {
+      await expect(parseQuery({ skip })).resolves.toEqual({
+        skip: Number.MAX_SAFE_INTEGER,
+        limit: 100,
+      });
+    },
+  );
+
+  it('un limit enorme sigue → 400 que nombra a limit (RF-6, caso 8)', async () => {
+    const result = parseQuery({ skip: '9'.repeat(20), limit: '9'.repeat(20) });
+
+    await expect(result).rejects.toBeInstanceOf(BadRequestException);
+    await expect(result).rejects.toThrow(/limit/);
+  });
+
   it('ignora otros parámetros de la query (como el servicio original)', async () => {
     await expect(parseQuery({ limit: '5', otro: 'x' })).resolves.toEqual({
       skip: 0,
