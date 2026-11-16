@@ -32,7 +32,7 @@ Reglas: una tarea por vez, tests primero (en rojo), gates
       malformado sin clave responde 401.
       Estimación: 20 min · depende de: T2
 
-- [ ] **T4. Géneros: CRUD completo.** RF-1, RF-2, RF-3, RF-6, RF-7, RF-8, RF-9, RF-10, RF-12, RF-13
+- [x] **T4. Géneros: CRUD completo.** RF-1, RF-2, RF-3, RF-6, RF-7, RF-8, RF-9, RF-10, RF-12, RF-13
       Entidad, repository, service, controller y DTOs de `genres` (incluye el 409 por
       pistas que lo usan y por nombre repetido).
       Hecho cuando: `pnpm test` pasa los tests del service (mock) y del repository
