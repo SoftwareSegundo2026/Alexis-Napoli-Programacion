@@ -14,6 +14,8 @@ import { RESERVATIONS_CASES } from './reservations.cases.js';
 
 /** Medio de pago de prueba: el caso 402 lo hace rechazar (spec 004). */
 const gateway = new ControllablePaymentGateway();
+/** Reloj de prueba: "completar" exige que el concierto ya haya empezado. */
+const clock = new FakeClock();
 import type { ContractCase, ContractContext } from './contract-case.js';
 import { checkResponse } from './shapes.js';
 import { USERS_CASES } from './users.cases.js';
@@ -68,7 +70,7 @@ describe('Contrato de la API (e2e)', () => {
   let viewerToken = '';
 
   beforeAll(async () => {
-    app = await createTestApp(withDoubles(gateway, new FakeClock()));
+    app = await createTestApp(withDoubles(gateway, clock));
     const users = await seedTestUsers(app);
     adminToken = users.adminToken;
     viewerToken = users.viewerToken;
@@ -84,6 +86,9 @@ describe('Contrato de la API (e2e)', () => {
     asViewer: (test) => test.set('Authorization', bearer(viewerToken)),
     setPaymentMode: (mode) => {
       gateway.mode = mode;
+    },
+    setNow: (date) => {
+      clock.current = date ?? new Date();
     },
     async create(base, body) {
       const response = await context

@@ -7,7 +7,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { DataSource } from 'typeorm';
+import { DataSource, EntityManager } from 'typeorm';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto.js';
 import { ConcertsRepository } from '../concerts/concerts.repository.js';
 import { Clock } from '../database/clock.js';
@@ -121,6 +121,71 @@ export class ReservationsService {
     );
   }
 
+  /**
+   * Cancela una reserva PROPIA (RF-9): en una transacción la pasa a CANCELLED,
+   * reembolsa el pago y libera sus entradas (la disponibilidad se recalcula).
+   * Cancelar una ya cancelada → la misma reserva, sin cambios (idempotente).
+   */
+  cancel(user: User, id: number): Promise<Reservation> {
+    return this.lock.run(() =>
+      this.dataSource.transaction(async (manager) => {
+        // Solo el dueño: la de otro (incluso para el admin) → 404 (RF-12).
+        const reservation = await this.reservations.findById(
+          id,
+          user.id,
+          manager,
+        );
+        if (reservation === null) {
+          throw new NotFoundException('Reservation not found');
+        }
+        if (reservation.status === 'CANCELLED') {
+          return reservation;
+        }
+        assertTransition(reservation.status, 'CANCELLED'); // COMPLETED → 409
+        if (await this.hasStarted(reservation.concertId, manager)) {
+          throw new ConflictException('The concert has already started');
+        }
+        await this.reservations.updateStatus(
+          manager,
+          reservation.id,
+          'CANCELLED',
+        );
+        await this.reservations.refundPayment(manager, reservation.id);
+        reservation.status = 'CANCELLED';
+        return reservation;
+      }),
+    );
+  }
+
+  /**
+   * Completa una reserva (admin, RF-10) cuando el concierto ya empezó.
+   * Completar una ya completada → la misma reserva, sin cambios (idempotente).
+   */
+  complete(id: number): Promise<Reservation> {
+    return this.lock.run(() =>
+      this.dataSource.transaction(async (manager) => {
+        const reservation = await this.reservations.findById(id, null, manager);
+        if (reservation === null) {
+          throw new NotFoundException('Reservation not found');
+        }
+        if (reservation.status === 'COMPLETED') {
+          return reservation;
+        }
+        assertTransition(reservation.status, 'COMPLETED'); // CANCELLED → 409
+        if (!(await this.hasStarted(reservation.concertId, manager))) {
+          throw new ConflictException('The concert has not started yet');
+        }
+        await this.reservations.updateStatus(
+          manager,
+          reservation.id,
+          'COMPLETED',
+        );
+        reservation.status = 'COMPLETED';
+        return reservation;
+      }),
+    );
+  }
+
   findAll(
     user: User,
     { skip, limit }: PaginationQueryDto,
@@ -138,6 +203,18 @@ export class ReservationsService {
       throw new NotFoundException('Reservation not found');
     }
     return reservation;
+  }
+
+  /** ¿El concierto ya empezó según el reloj? (Clock inyectable: los tests lo adelantan.) */
+  private async hasStarted(
+    concertId: number,
+    manager: EntityManager,
+  ): Promise<boolean> {
+    const found = await this.concerts.findById(concertId, manager);
+    return (
+      found !== null &&
+      new Date(found.concert.startsAt).getTime() <= this.clock.now().getTime()
+    );
   }
 
   /** El admin ve todas; cualquier otro usuario, solo las suyas. */

@@ -110,8 +110,8 @@ describe('Documentación interactiva (e2e) — RF-14', () => {
   });
 
   // 25 hasta el TP-2; 26 desde la spec 003 (el buscador es la operación 21 del
-  // catálogo); 29 desde la spec 004 (3 de conciertos); 32 con las 3 de reservas.
-  it('en total la API son 32 operaciones: 21 del catálogo, el login, 4 de usuarios, 3 de conciertos y 3 de reservas', () => {
+  // catálogo); 29 desde la spec 004 (3 de conciertos); 34 con las 5 de reservas.
+  it('en total la API son 34 operaciones: 21 del catálogo, el login, 4 de usuarios, 3 de conciertos y 5 de reservas', () => {
     const all = Object.entries(document.paths)
       .filter(([path]) => path.startsWith('/api/v1/'))
       .flatMap(([, item]) =>
@@ -120,7 +120,7 @@ describe('Documentación interactiva (e2e) — RF-14', () => {
         ),
       );
 
-    expect(all).toHaveLength(32);
+    expect(all).toHaveLength(34);
   });
 
   it('el esquema de usuario no expone la contraseña ni el hash (RNF-1)', () => {

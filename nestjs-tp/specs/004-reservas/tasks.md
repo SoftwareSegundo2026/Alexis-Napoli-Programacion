@@ -41,7 +41,7 @@ Reglas: una tarea por vez, tests primero (en rojo), gates en verde (`lint`, `bui
       entrada o el de muchas reservas falla (se revierte y se documenta).
       Estimación: 30 min · depende de: T4
 
-- [ ] **T6. Cancelar y completar.** RF-9, RF-10, RF-11 · casos 4, 7, 15–17, 23
+- [x] **T6. Cancelar y completar.** RF-9, RF-10, RF-11 · casos 4, 7, 15–17, 23
       Acciones `cancel` (dueño, reembolso, idempotente) y `complete` (admin, idempotente), con el
       `Clock` adelantado en los tests; contrato.
       Hecho cuando: `pnpm test:e2e` pasa los casos y el cupo vuelve una sola vez tras dos cancelaciones.

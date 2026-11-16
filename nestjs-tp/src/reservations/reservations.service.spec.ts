@@ -262,4 +262,80 @@ describe('ReservationsService (contra una copia de la base)', () => {
       'Status',
     ]);
   });
+
+  describe('cancelar y completar (RF-9, RF-10, RF-11)', () => {
+    const AFTER = new Date('2031-01-02T00:00:00Z');
+    const reserveOne = async (quantity = 2) =>
+      service.create(
+        owner,
+        { ConcertId: await newConcert(5), Quantity: quantity },
+        nextKey(),
+      );
+    const available = async (concertId: number) =>
+      (await concerts.findById(concertId))?.available;
+
+    it('cancelar: CANCELLED, pago REFUNDED y cupo liberado; dos veces → igual', async () => {
+      const reservation = await reserveOne(2);
+      await expect(available(reservation.concertId)).resolves.toBe(3);
+
+      const first = await service.cancel(owner, reservation.id);
+      const second = await service.cancel(owner, reservation.id);
+
+      expect(first.status).toBe('CANCELLED');
+      expect(second).toEqual(first);
+      await expect(available(reservation.concertId)).resolves.toBe(5);
+      const payments: Array<{ status: string }> = await dataSource.query(
+        'SELECT Status AS status FROM Payment WHERE ReservationId = ?',
+        [reservation.id],
+      );
+      expect(payments).toEqual([{ status: 'REFUNDED' }]);
+    });
+
+    it('cancelar: de otro usuario → 404; inexistente → 404; ya empezado → 409', async () => {
+      const reservation = await reserveOne();
+
+      await expect(
+        service.cancel(other, reservation.id),
+      ).rejects.toBeInstanceOf(NotFoundException);
+      await expect(service.cancel(owner, 999999)).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+      clock.current = AFTER;
+      await expect(service.cancel(owner, reservation.id)).rejects.toThrow(
+        'The concert has already started',
+      );
+    });
+
+    it('completar: antes del concierto → 409; después → COMPLETED; dos veces → igual', async () => {
+      const reservation = await reserveOne();
+
+      await expect(service.complete(reservation.id)).rejects.toThrow(
+        'The concert has not started yet',
+      );
+      clock.current = AFTER;
+      const first = await service.complete(reservation.id);
+      const second = await service.complete(reservation.id);
+
+      expect(first.status).toBe('COMPLETED');
+      expect(second).toEqual(first);
+      await expect(service.complete(999999)).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
+
+    it('transiciones inválidas: cancelar una completada y completar una cancelada → 409', async () => {
+      const cancelled = await reserveOne();
+      await service.cancel(owner, cancelled.id);
+      const completed = await reserveOne();
+      clock.current = AFTER;
+      await service.complete(completed.id);
+
+      await expect(service.complete(cancelled.id)).rejects.toThrow(
+        'Invalid status transition: CANCELLED → COMPLETED',
+      );
+      await expect(service.cancel(owner, completed.id)).rejects.toThrow(
+        'Invalid status transition: COMPLETED → CANCELLED',
+      );
+    });
+  });
 });

@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseIntPipe,
   Post,
@@ -17,7 +19,9 @@ import {
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { ErrorResponseDto } from '../common/dto/error-response.dto.js';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto.js';
+import { Roles } from '../auth/decorators/roles.decorator.js';
 import {
+  ApiAdminOnly,
   ApiAuthenticated,
   ApiConflict,
   ApiInvalidRequest,
@@ -73,6 +77,38 @@ export class ReservationsController {
   ): Promise<ReservationResponseDto[]> {
     const reservations = await this.reservationsService.findAll(user, query);
     return reservations.map((r) => ReservationResponseDto.fromEntity(r));
+  }
+
+  @Post(':id/cancel')
+  @HttpCode(HttpStatus.OK)
+  @ApiAuthenticated()
+  @ApiOkResponse({ type: ReservationResponseDto })
+  @ApiInvalidRequest()
+  @ApiNotFound()
+  @ApiConflict('Completada, o el concierto ya empezó')
+  async cancel(
+    @CurrentUser() user: User,
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<ReservationResponseDto> {
+    return ReservationResponseDto.fromEntity(
+      await this.reservationsService.cancel(user, id),
+    );
+  }
+
+  @Post(':id/complete')
+  @HttpCode(HttpStatus.OK)
+  @Roles('admin')
+  @ApiAdminOnly()
+  @ApiOkResponse({ type: ReservationResponseDto })
+  @ApiInvalidRequest()
+  @ApiNotFound()
+  @ApiConflict('Cancelada, o el concierto todavía no empezó')
+  async complete(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<ReservationResponseDto> {
+    return ReservationResponseDto.fromEntity(
+      await this.reservationsService.complete(id),
+    );
   }
 
   @Get(':id')

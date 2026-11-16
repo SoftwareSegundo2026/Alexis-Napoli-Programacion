@@ -13,6 +13,8 @@ export interface ContractContext {
   create(base: string, body: object): Promise<number>;
   /** Hace que el medio de pago de prueba rechace (`reject`) o apruebe los cobros (spec 004). */
   setPaymentMode(mode: 'approve' | 'reject'): void;
+  /** Fija la hora del reloj de prueba (`null` = la hora real). */
+  setNow(date: Date | null): void;
 }
 
 /**

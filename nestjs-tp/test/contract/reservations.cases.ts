@@ -4,6 +4,10 @@ import { ERROR_BODY, list, object, RESERVATION } from './shapes.js';
 
 const RESERVATIONS = '/api/v1/reservations';
 const ITEM = `${RESERVATIONS}/{id}`;
+const CANCEL = `${RESERVATIONS}/{id}/cancel`;
+const COMPLETE = `${RESERVATIONS}/{id}/complete`;
+/** Después del `StartsAt` de los conciertos del contrato (2099-06-01). */
+const AFTER_START = new Date('2099-06-02T00:00:00Z');
 
 let keyCounter = 0;
 const nextKey = (): string => `clave-contrato-${++keyCounter}`;
@@ -140,5 +144,108 @@ export const RESERVATIONS_CASES: readonly ContractCase[] = [
     name: 'inexistente',
     expected: ERROR_BODY,
     send: async (c) => c.asViewer(c.http().get(`${RESERVATIONS}/999999`)),
+  },
+  // POST /reservations/{id}/cancel — 200 400 401 404 409 (dueño)
+  {
+    operation: `POST ${CANCEL}`,
+    status: 200,
+    name: 'cancela la propia',
+    expected: object(RESERVATION),
+    send: async (c) =>
+      c.asViewer(
+        c.http().post(`${RESERVATIONS}/${await ownReservation(c)}/cancel`),
+      ),
+  },
+  {
+    operation: `POST ${CANCEL}`,
+    status: 400,
+    name: 'id no entero',
+    expected: ERROR_BODY,
+    send: async (c) => c.asViewer(c.http().post(`${RESERVATIONS}/abc/cancel`)),
+  },
+  {
+    operation: `POST ${CANCEL}`,
+    status: 401,
+    name: 'sin credencial',
+    expected: ERROR_BODY,
+    send: async (c) => c.http().post(`${RESERVATIONS}/1/cancel`),
+  },
+  {
+    operation: `POST ${CANCEL}`,
+    status: 404,
+    name: 'inexistente',
+    expected: ERROR_BODY,
+    send: async (c) =>
+      c.asViewer(c.http().post(`${RESERVATIONS}/999999/cancel`)),
+  },
+  {
+    operation: `POST ${CANCEL}`,
+    status: 409,
+    name: 'el concierto ya empezó',
+    expected: ERROR_BODY,
+    send: async (c) => {
+      const id = await ownReservation(c);
+      c.setNow(AFTER_START);
+      try {
+        return await c.asViewer(c.http().post(`${RESERVATIONS}/${id}/cancel`));
+      } finally {
+        c.setNow(null);
+      }
+    },
+  },
+  // POST /reservations/{id}/complete — 200 400 401 403 404 409 (admin)
+  {
+    operation: `POST ${COMPLETE}`,
+    status: 200,
+    name: 'completa después del concierto',
+    expected: object(RESERVATION),
+    send: async (c) => {
+      const id = await ownReservation(c);
+      c.setNow(AFTER_START);
+      try {
+        return await c.asAdmin(c.http().post(`${RESERVATIONS}/${id}/complete`));
+      } finally {
+        c.setNow(null);
+      }
+    },
+  },
+  {
+    operation: `POST ${COMPLETE}`,
+    status: 400,
+    name: 'id no entero',
+    expected: ERROR_BODY,
+    send: async (c) => c.asAdmin(c.http().post(`${RESERVATIONS}/abc/complete`)),
+  },
+  {
+    operation: `POST ${COMPLETE}`,
+    status: 401,
+    name: 'sin credencial',
+    expected: ERROR_BODY,
+    send: async (c) => c.http().post(`${RESERVATIONS}/1/complete`),
+  },
+  {
+    operation: `POST ${COMPLETE}`,
+    status: 403,
+    name: 'viewer',
+    expected: ERROR_BODY,
+    send: async (c) => c.asViewer(c.http().post(`${RESERVATIONS}/1/complete`)),
+  },
+  {
+    operation: `POST ${COMPLETE}`,
+    status: 404,
+    name: 'inexistente',
+    expected: ERROR_BODY,
+    send: async (c) =>
+      c.asAdmin(c.http().post(`${RESERVATIONS}/999999/complete`)),
+  },
+  {
+    operation: `POST ${COMPLETE}`,
+    status: 409,
+    name: 'el concierto todavía no empezó',
+    expected: ERROR_BODY,
+    send: async (c) =>
+      c.asAdmin(
+        c.http().post(`${RESERVATIONS}/${await ownReservation(c)}/complete`),
+      ),
   },
 ];
