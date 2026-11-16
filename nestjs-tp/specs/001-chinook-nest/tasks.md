@@ -68,7 +68,7 @@ Reglas: una tarea por vez, tests primero (en rojo), gates
       lista las 20 rutas de los 4 recursos y declara `X-API-Key`.
       Estimación: 20 min · depende de: T7
 
-- [ ] **T9. Seguridad transversal y cierre.** RF-11, RNF-2, RNF-4
+- [x] **T9. Seguridad transversal y cierre.** RF-11, RNF-2, RNF-4
       e2e de seguridad (401 en las 12 rutas de escritura; sin clave y con cuerpo inválido
       → 401), verificación de claves exactas del JSON por recurso, `.env.example` y README
       de puesta en marcha, `MEMORY.md`.

@@ -9,6 +9,39 @@ backend con NestJS siguiendo la metodología **SDD + multiagentes** de
 
 ---
 
+## Puesta en marcha de la API (TP-1: catálogo Chinook)
+
+API REST con artistas, álbumes, géneros y pistas, con el mismo contrato que el
+servicio FastAPI original. Spec, plan y tareas en `specs/001-chinook-nest/`.
+
+**Requisitos:** Node 24 y pnpm. `better-sqlite3` se compila al instalar
+(habilitado en `pnpm-workspace.yaml`).
+
+```bash
+pnpm install
+cp .env.example .env      # completar WRITE_API_KEY (obligatoria: sin ella no arranca)
+pnpm start:dev            # o: pnpm build && pnpm start:prod
+```
+
+| Qué | Dónde |
+|---|---|
+| API | `http://localhost:<PORT>/api/v1/{artists,albums,genres,tracks}` |
+| Documentación interactiva | `http://localhost:<PORT>/docs` (JSON en `/docs-json`) |
+| Escrituras (POST/PATCH/DELETE) | header `X-API-Key: <WRITE_API_KEY>`; sin ella → 401 |
+| Listados | `?skip=0&limit=100` (máximo 100) |
+| Errores | siempre `{"detail": "<mensaje>"}` |
+
+**Base de datos:** `data/chinook.template.db` es la copia versionada de Chinook y
+nunca se escribe. Al arrancar, si no existe la base de trabajo (`DATABASE_PATH`,
+por defecto `data/chinook.db`, fuera del repo), se crea copiándola. Para volver a
+los datos originales alcanza con borrar `data/chinook.db`.
+
+**Tests:** `pnpm lint && pnpm build && pnpm test && pnpm test:e2e`. Los e2e
+trabajan cada uno sobre una copia temporal de la base (`test/setup-e2e.ts`), así
+que no tocan los datos de desarrollo.
+
+---
+
 ## Cómo arrancar
 
 Este repo es un **arnés**, no una app. Se superpone sobre un proyecto NestJS:

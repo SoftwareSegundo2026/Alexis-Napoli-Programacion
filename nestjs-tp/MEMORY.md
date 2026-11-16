@@ -3,9 +3,9 @@
 Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al terminar **cada tarea**.
 
 ## Estado actual
-- Fase del flujo: `001-chinook-nest` (TP-1) → implementando. **T1–T8 hechas**; siguiente: T9 (seguridad y cierre).
+- Fase del flujo: `001-chinook-nest` (TP-1) → **T1–T9 hechas**; siguiente: `/sdd-validate`.
 - Specs activas: `specs/001-chinook-nest/` (TP-1) · `specs/000-ejemplo-chinook/` (referencia del docente)
-- Tests: `pnpm test` 151 (21 archivos) y `pnpm test:e2e` 111 (8 archivos) en verde; lint sin avisos; build verde.
+- Tests: `pnpm test` 151 (21 archivos) y `pnpm test:e2e` 168 (9 archivos) en verde; lint sin avisos; build verde.
 
 ## Decisiones (y por qué)
 - 15/11 · Base `programacion/nestjs-music`; constitución del docente sin cambios; lint con
@@ -45,6 +45,9 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 - 16/11 · T8: Swagger en `configureApp` (`/docs`, `/docs-json`), esquema `write-key` (header
   `X-API-Key`). Decoradores propios en `common/swagger/` (`@ApiWriteOperation`, 400/404/409 con
   `ErrorResponseDto`). `@ApiProperty` explícito con `type` en los campos `T | null`.
+- 16/11 · T9: `test/security.e2e-spec.ts` (12 escrituras × sin clave/incorrecta/vacía, prioridad
+  401, lecturas libres, campos exactos). Verificado con mutación (sin middleware → 43 fallan).
+  README: sección "Puesta en marcha" agregada sin tocar el resto del arnés. Probado el `.env` real.
 
 ## Aprendizajes y errores a evitar
 - `ConfigModule.forRoot({ validate })` valida al **importar** `app.module`, no en `init()`.
@@ -57,7 +60,9 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 - `test/app.e2e-spec.ts` (de la base) no pasa `prettier --check`; no se tocó.
 - Correr prettier solo sobre archivos propios: sobre `src/` entero reescribe archivos de la base
   (pasó en T8; se restauraron con `git checkout`).
+- Si un e2e falla al levantar la app, su base temporal puede quedar en `%TEMP%` (Windows la
+  bloquea). En corridas verdes no queda ninguna. Es inofensivo; se puede borrar a mano.
 
 ## Próximos pasos
-- T9: `test/security.e2e-spec.ts` (401 en las 12 escrituras), README de puesta en marcha, cierre.
-- Después: `/sdd-validate 001-chinook-nest` → `validate.md`.
+- `/sdd-validate 001-chinook-nest` → `specs/001-chinook-nest/validate.md` (RF → test → resultado).
+- Después: TP-2 (`002-*`: usuarios, login JWT, roles, actividad).
