@@ -6,13 +6,46 @@ import { createTestApp } from '../helpers/test-app.js';
 import { CATALOG_CASES } from './catalog.cases.js';
 import type { ContractCase, ContractContext } from './contract-case.js';
 import { checkResponse } from './shapes.js';
+import { USERS_CASES } from './users.cases.js';
 
 /**
  * Contrato de la API (spec 005, RF-3 a RF-5): cada operación documentada con
  * su caso exitoso y cada código de error que declara. Un caso que no cumple
  * falla con el nombre `operación · código · caso` y la lista de diferencias.
  */
-const CASES: readonly ContractCase[] = [...CATALOG_CASES];
+const CASES: readonly ContractCase[] = [...CATALOG_CASES, ...USERS_CASES];
+
+const HTTP_METHODS = ['get', 'post', 'put', 'patch', 'delete'];
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Pares `MÉTODO /ruta · código` que declara el documento OpenAPI. Se usa SOLO
+ * como inventario (RF-4): las formas esperadas no salen de acá (RF-5).
+ */
+function documentedPairs(document: unknown): string[] {
+  const paths = isRecord(document) ? document.paths : undefined;
+  if (!isRecord(paths)) {
+    throw new Error('El documento OpenAPI no tiene "paths"');
+  }
+  const pairs: string[] = [];
+  for (const [path, operations] of Object.entries(paths)) {
+    if (!isRecord(operations)) continue;
+    for (const method of HTTP_METHODS) {
+      const operation = operations[method];
+      if (!isRecord(operation) || !isRecord(operation.responses)) continue;
+      for (const status of Object.keys(operation.responses)) {
+        pairs.push(`${method.toUpperCase()} ${path} · ${status}`);
+      }
+    }
+  }
+  return pairs.sort();
+}
+
+const casePairs = (): string[] =>
+  [...new Set(CASES.map((c) => `${c.operation} · ${c.status}`))].sort();
 
 describe('Contrato de la API (e2e)', () => {
   let app: INestApplication<App>;
@@ -38,7 +71,7 @@ describe('Contrato de la API (e2e)', () => {
       const response = await context
         .asAdmin(context.http().post(base))
         .send(body);
-      // En toda respuesta del catálogo el primer campo es el id (ArtistId, AlbumId…).
+      // En toda respuesta de alta el primer campo es el id (ArtistId, user_id…).
       const created: unknown = response.body;
       const id =
         typeof created === 'object' && created !== null
@@ -59,5 +92,29 @@ describe('Contrato de la API (e2e)', () => {
     expect(
       checkResponse(response, contractCase.status, contractCase.expected),
     ).toEqual([]);
+  });
+
+  describe('inventario contra /docs-json (RF-4)', () => {
+    let documented: string[] = [];
+
+    beforeAll(async () => {
+      const response = await context.http().get('/docs-json').expect(200);
+      documented = documentedPairs(response.body);
+    });
+
+    it('toda operación y código documentados tienen al menos un caso', () => {
+      const covered = casePairs();
+      const missing = documented.filter((pair) => !covered.includes(pair));
+
+      expect(missing).toEqual([]);
+    });
+
+    // También protege contra un inventario vacío (si la lectura del documento
+    // fallara, todos los casos quedarían "sin documentar" y este test fallaría).
+    it('ningún caso apunta a una operación o código que ya no se documenta', () => {
+      const stale = casePairs().filter((pair) => !documented.includes(pair));
+
+      expect(stale).toEqual([]);
+    });
   });
 });

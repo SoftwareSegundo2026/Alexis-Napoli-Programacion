@@ -32,7 +32,7 @@ sin `[x]`) y `005-Tn` (el arreglo, sin tocar esos tests; con `[x]`) — RNF-4.
       cada mutación hace fallar el caso correspondiente.
       Estimación: 45 min · depende de: T1
 
-- [ ] **T3. Contrato: login, usuarios e inventario.** RF-4 · casos 3–6
+- [x] **T3. Contrato: login, usuarios e inventario.** RF-4 · casos 3–6
       `users.cases.ts` (`POST /auth/token`, `GET /users`, `GET /users/me`, `POST /users`,
       `PATCH /users/{id}`) y el inventario: lee `/docs-json`, arma los pares (operación,
       código documentado) y falla si a alguno le falta un caso o si un caso apunta a un par

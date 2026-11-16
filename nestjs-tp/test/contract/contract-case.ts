@@ -32,3 +32,9 @@ export function uniqueName(prefix: string): string {
   counter += 1;
   return `${prefix} contrato ${counter}`;
 }
+
+/** Variante sin espacios, para los `username` (solo letras, números, `.`, `_` y `-`). */
+export function uniqueUsername(): string {
+  counter += 1;
+  return `contrato_${counter}`;
+}

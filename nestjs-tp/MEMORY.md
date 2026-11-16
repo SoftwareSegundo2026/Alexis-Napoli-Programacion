@@ -5,8 +5,8 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 ## Estado actual
 - TP-1 (`001-chinook-nest`) **cerrado, validado y pusheado** (`91124e0`).
 - TP-2 (`002-auth-roles`) **cerrado**: T1–T9 y `validate.md` → APROBADO.
-- TP-5 (`005-calidad`) **en curso**: spec, clarify, plan y tareas aprobados; T1–T2 cerradas. Siguiente: T3.
-- Tests: `pnpm test` 246 (29 archivos) y `pnpm test:e2e` 339 (14 archivos) en verde; lint sin avisos;
+- TP-5 (`005-calidad`) **en curso**: spec, clarify, plan y tareas aprobados; T1–T3 cerradas. Siguiente: T4 (bug 1, dos commits).
+- Tests: `pnpm test` 246 (29 archivos) y `pnpm test:e2e` 360 (14 archivos) en verde; lint sin avisos;
   `pnpm exec tsc --noEmit -p tsconfig.json` también limpio (chequea los tipos de `test/`).
 - Cobertura (unit, todo `src/`): líneas 76,52% (476/622, **146 sin cubrir**) · ramas 80,4%
   (201/250, **49 sin cubrir**). Umbral 75/75. Ninguna tarea del TP-5 puede subir lo sin cubrir.
@@ -73,6 +73,11 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   recurso: 85 casos = 84 pares del catálogo + `GET /`) y `contract.e2e-spec.ts` (`it.each`).
   `/docs-json` documenta **26** operaciones (incluye `GET /`), no 25. Mutaciones detectadas (4 casos
   c/u): sin `ImageUrl` en artista; `UnitPrice` como texto; `POST /genres` con 200. Cobertura igual.
+- 16/11 · 005-T3: `users.cases.ts` (19 casos: login, me, listado, alta, PATCH) + inventario contra
+  `/docs-json` (faltantes y casos huérfanos; el de huérfanos también protege contra un inventario
+  vacío). NO se fija la cantidad de operaciones: TP-3/TP-4 tendrían que modificar el test. Al
+  agregar un endpoint, el inventario exige sus casos. Mutaciones: `@ApiNotFound` en `POST /genres`
+  → falla "POST /api/v1/genres · 404"; sin los casos de usuarios → lista los 19 pares.
 
 ## Decisiones del plan 002 a recordar en las próximas tareas
 - Guards globales (`APP_GUARD`, autenticación → roles); lo público con `@Public()`.
@@ -97,5 +102,5 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   comprobar el valor y `JSON.stringify`, no `toHaveProperty`.
 
 ## Próximos pasos
-- TP-5: T3 (contrato de login/usuarios + inventario) según `specs/005-calidad/tasks.md`.
+- TP-5: T4 (bug 1: `skip` enorme) según `specs/005-calidad/tasks.md`.
 - Pendiente para el TP-4: test de modificaciones concurrentes (observación de `001/validate.md`).
