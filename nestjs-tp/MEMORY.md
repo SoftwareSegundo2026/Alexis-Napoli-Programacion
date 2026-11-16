@@ -4,8 +4,8 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 
 ## Estado actual
 - TP-1 (`001-chinook-nest`) **cerrado, validado y pusheado** (`91124e0`).
-- TP-2 (`002-auth-roles`): spec, clarify, plan y tareas aprobados. **T1–T8 hechas**; siguiente: T9.
-- Tests: `pnpm test` 246 (29 archivos) y `pnpm test:e2e` 249 (12 archivos) en verde; lint sin avisos;
+- TP-2 (`002-auth-roles`): **T1–T9 hechas**; siguiente: `/sdd-validate 002-auth-roles`.
+- Tests: `pnpm test` 246 (29 archivos) y `pnpm test:e2e` 254 (13 archivos) en verde; lint sin avisos;
   `pnpm exec tsc --noEmit -p tsconfig.json` también limpio (chequea los tipos de `test/`).
 
 ## Decisiones (y por qué)
@@ -55,6 +55,11 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 - 16/11 · 002-T8: Swagger con `addBearerAuth` (esquema `bearer`); `@ApiAuthenticated()` (401) y
   `@ApiAdminOnly()` (401+403) reemplazan a `@ApiWriteOperation`. X-API-Key ya no aparece.
   `docs.e2e`: 25 operaciones (20 catálogo + login + 4 usuarios).
+- 16/11 · 002-T9: `protection.e2e` recorre el OpenAPI (inventario de las 25 operaciones): toda no
+  pública → 401 sin credencial; toda no pública salvo `/users/me` → 403 a un viewer; la doc
+  coincide con la realidad. Mutaciones verificadas: sin `@Roles` en un DELETE → detectado;
+  `@Public` por error en `GET /users` → detectado (y el `RolesGuard` igual devolvía 401).
+  Historial revisado: ningún `.env` ni secreto con valor commiteado. README actualizado.
 
 ## Decisiones del plan 002 a recordar en las próximas tareas
 - Guards globales (`APP_GUARD`, autenticación → roles); lo público con `@Public()`.
@@ -79,6 +84,5 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   comprobar el valor y `JSON.stringify`, no `toHaveProperty`.
 
 ## Próximos pasos
-- 002-T9: `test/protection.e2e-spec.ts` (regresión sobre el OpenAPI), control de secretos en
-  `git log`, README; después `/sdd-validate 002-auth-roles`.
+- `/sdd-validate 002-auth-roles` → `specs/002-auth-roles/validate.md`; después TP-5.
 - Pendiente para el TP-4: test de modificaciones concurrentes (observación de `001/validate.md`).

@@ -66,7 +66,7 @@ Reglas: una tarea por vez, tests primero (en rojo), gates
       protegidas declaran `Bearer` y las públicas no; esquema `UserResponseDto` sin hash).
       Estimación: 20 min · depende de: T7
 
-- [ ] **T9. Regresión de protección y cierre.** RF-5, RNF-3
+- [x] **T9. Regresión de protección y cierre.** RF-5, RNF-3
       `test/protection.e2e-spec.ts`: recorre el documento OpenAPI y exige 401 sin credencial en
       toda operación no pública; control de secretos en `git log`; README y `MEMORY.md`.
       Hecho cuando: `pnpm test:e2e` pasa `protection.e2e-spec.ts` y

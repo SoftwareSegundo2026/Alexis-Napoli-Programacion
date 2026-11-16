@@ -9,27 +9,34 @@ backend con NestJS siguiendo la metodología **SDD + multiagentes** de
 
 ---
 
-## Puesta en marcha de la API (TP-1: catálogo Chinook)
+## Puesta en marcha de la API (TP-1 catálogo Chinook + TP-2 autenticación y roles)
 
 API REST con artistas, álbumes, géneros y pistas, con el mismo contrato que el
-servicio FastAPI original. Spec, plan y tareas en `specs/001-chinook-nest/`.
+servicio FastAPI original (`specs/001-chinook-nest/`), protegida con login y roles
+`admin` / `viewer` (`specs/002-auth-roles/`).
 
 **Requisitos:** Node 24 y pnpm. `better-sqlite3` se compila al instalar
 (habilitado en `pnpm-workspace.yaml`).
 
 ```bash
 pnpm install
-cp .env.example .env      # completar WRITE_API_KEY (obligatoria: sin ella no arranca)
+cp .env.example .env      # completar JWT_SECRET (obligatorio, ≥ 32 caracteres: sin él no arranca)
 pnpm start:dev            # o: pnpm build && pnpm start:prod
 ```
 
 | Qué | Dónde |
 |---|---|
-| API | `http://localhost:<PORT>/api/v1/{artists,albums,genres,tracks}` |
-| Documentación interactiva | `http://localhost:<PORT>/docs` (JSON en `/docs-json`) |
-| Escrituras (POST/PATCH/DELETE) | header `X-API-Key: <WRITE_API_KEY>`; sin ella → 401 |
+| Catálogo | `http://localhost:<PORT>/api/v1/{artists,albums,genres,tracks}` — lecturas públicas |
+| Login | `POST /api/v1/auth/token` con `{"username","password"}` → `{"access_token","token_type":"bearer"}` |
+| Credencial | header `Authorization: Bearer <access_token>`; vence en `JWT_EXPIRES_MINUTES` (30) |
+| Escrituras del catálogo | solo rol `admin` (sin credencial → 401; viewer → 403) |
+| Usuarios | `GET /api/v1/users/me` (cualquiera logueado); `GET`, `POST /api/v1/users` y `PATCH /api/v1/users/{id}` (admin) |
+| Documentación interactiva | `http://localhost:<PORT>/docs` (botón *Authorize* para la credencial; JSON en `/docs-json`) |
 | Listados | `?skip=0&limit=100` (máximo 100) |
-| Errores | siempre `{"detail": "<mensaje>"}` |
+| Errores | siempre `{"detail": "<mensaje>"}`; todo 401 trae `WWW-Authenticate: Bearer` |
+
+**Usuarios:** la base trae los de la cátedra (con `IsAdmin` → rol admin). Un admin da de
+alta usuarios nuevos con `POST /api/v1/users`; las contraseñas se guardan solo como hash.
 
 **Base de datos:** `data/chinook.template.db` es la copia versionada de Chinook y
 nunca se escribe. Al arrancar, si no existe la base de trabajo (`DATABASE_PATH`,
