@@ -43,7 +43,7 @@ Después, **PARA**. Push de la rama con OK del usuario; entra a `main` por PR (s
       el `escapeLike` → falla el caso 5 (se revierte y se documenta).
       Estimación: 35 min · depende de: T3
 
-- [ ] **T5. Filtros numéricos como parámetros (hallazgo de la validación).** RNF-3
+- [x] **T5. Filtros numéricos como parámetros (hallazgo de la validación).** RNF-3
       La validación encontró que el driver de SQLite de TypeORM escribe como literal todo
       parámetro `number` (`"GenreId" = 7`). Los filtros numéricos pasan a `CAST(? AS INTEGER)` /
       `CAST(? AS REAL)` con el valor como texto. Agregada con aprobación del usuario (16/11).

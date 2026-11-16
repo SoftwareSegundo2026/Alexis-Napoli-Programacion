@@ -340,4 +340,37 @@ describe('TracksRepository.search (contra una copia de la base)', () => {
     }
     expect(page?.parameters).toContain('%zzz\\%\\_unico%');
   });
+
+  // Spec 003 RNF-3 (precisado en la validación): TODO valor de filtro, también
+  // los números, viaja como parámetro. El driver de SQLite de TypeORM escribe
+  // como literal cualquier parámetro `number`; este test lo detecta.
+  it('ningún valor de filtro (texto ni números) aparece en el SQL ejecutado (RNF-3, T5)', async () => {
+    const filters = {
+      q: 'zzq',
+      genreId: 13,
+      artistId: 87,
+      minPrice: 0.37,
+      maxPrice: 1.73,
+      minMs: 123457,
+      maxMs: 987653,
+    };
+    logger.queries.length = 0;
+
+    await search(filters);
+
+    const selects = logger.queries.filter((query) =>
+      query.sql.startsWith('SELECT'),
+    );
+    expect(selects.length).toBeGreaterThanOrEqual(2); // página y COUNT
+    for (const query of selects) {
+      for (const value of Object.values(filters)) {
+        expect(query.sql).not.toContain(String(value));
+      }
+      for (const value of Object.values(filters).filter(
+        (v) => typeof v === 'number',
+      )) {
+        expect(query.parameters).toContain(String(value));
+      }
+    }
+  });
 });

@@ -85,7 +85,8 @@ export class TracksRepository {
   /**
    * Búsqueda con filtros combinados (spec 003). Todo se resuelve EN LA BASE: una
    * consulta con la página (LIMIT/OFFSET) y otra con el total (COUNT), RNF-1.
-   * Todos los valores viajan como parámetros nombrados, nunca concatenados (RNF-3).
+   * Todo valor de filtro viaja como parámetro (`?`), nunca concatenado (RNF-3);
+   * LIMIT/OFFSET los escribe el QueryBuilder a partir de enteros ya validados.
    * LEFT JOIN: una pista sin álbum o sin género no desaparece (RF-10).
    */
   async search(
@@ -104,30 +105,39 @@ export class TracksRepository {
         { q: `%${escapeLike(String(unicodeLower(filters.q)))}%` },
       );
     }
+    // Filtros numéricos: el valor va como TEXTO y el SQL lo convierte con CAST,
+    // porque el driver de SQLite de TypeORM escribe como literal todo parámetro
+    // `number` ("GenreId" = 7). Así también los números viajan como `?` (RNF-3).
     if (filters.genreId !== undefined) {
-      query.andWhere('track.genreId = :genreId', { genreId: filters.genreId });
+      query.andWhere('track.genreId = CAST(:genreId AS INTEGER)', {
+        genreId: String(filters.genreId),
+      });
     }
     if (filters.artistId !== undefined) {
       // El artista es el del álbum: una pista sin álbum no coincide (RF-4).
-      query.andWhere('album.artistId = :artistId', {
-        artistId: filters.artistId,
+      query.andWhere('album.artistId = CAST(:artistId AS INTEGER)', {
+        artistId: String(filters.artistId),
       });
     }
     if (filters.minPrice !== undefined) {
-      query.andWhere('track.unitPrice >= :minPrice', {
-        minPrice: filters.minPrice,
+      query.andWhere('track.unitPrice >= CAST(:minPrice AS REAL)', {
+        minPrice: String(filters.minPrice),
       });
     }
     if (filters.maxPrice !== undefined) {
-      query.andWhere('track.unitPrice <= :maxPrice', {
-        maxPrice: filters.maxPrice,
+      query.andWhere('track.unitPrice <= CAST(:maxPrice AS REAL)', {
+        maxPrice: String(filters.maxPrice),
       });
     }
     if (filters.minMs !== undefined) {
-      query.andWhere('track.milliseconds >= :minMs', { minMs: filters.minMs });
+      query.andWhere('track.milliseconds >= CAST(:minMs AS INTEGER)', {
+        minMs: String(filters.minMs),
+      });
     }
     if (filters.maxMs !== undefined) {
-      query.andWhere('track.milliseconds <= :maxMs', { maxMs: filters.maxMs });
+      query.andWhere('track.milliseconds <= CAST(:maxMs AS INTEGER)', {
+        maxMs: String(filters.maxMs),
+      });
     }
 
     query.orderBy(
