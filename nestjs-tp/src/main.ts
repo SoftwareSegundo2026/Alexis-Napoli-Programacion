@@ -31,6 +31,11 @@ async function bootstrap(): Promise<void> {
     instrument: observeEnabled ? ObserveInstrument : undefined,
   });
   configureApp(app);
+  // Spec 007 RF-16: ante SIGTERM (redespliegue, `docker compose stop`) o SIGINT,
+  // Nest deja de aceptar conexiones, espera los pedidos en curso, cierra la
+  // base y sale con 0. Sin `useProcessExit`, Nest se reenvía la señal y el
+  // proceso sale con 143 (como si lo hubieran matado).
+  app.enableShutdownHooks(['SIGTERM', 'SIGINT'], { useProcessExit: true });
 
   const bootstrapLogger = new Logger('Bootstrap');
   if (!observeEnabled) {

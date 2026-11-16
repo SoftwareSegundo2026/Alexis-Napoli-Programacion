@@ -43,6 +43,12 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   `setDatabaseUp`); `health.e2e` con `dataSource.destroy()` REAL → 503. CORRECCIÓN de la spec
   RNF-6: protection/docs cuentan solo `/api/v1` → siguen en 34; `/health` con tests propios.
   481 unit, 514 e2e, cov 82,46% / 85,67%.
+- 16/11 · 007-T4: `ShutdownLogger` (`beforeApplicationShutdown(signal)` + `onApplicationShutdown`)
+  en AppModule; `main.ts` → `enableShutdownHooks(['SIGTERM','SIGINT'], { useProcessExit: true })`.
+  OJO: en Nest 12 `app.close()` NO acepta la señal en los tipos (sí en runtime) → el test llama
+  los hooks directo. `createNestApplication()` sin `logger` vuelve al logger por defecto (pisa
+  `Logger.overrideLogger`). La señal real y el exit 0 se verifican en Docker (caso 16; Windows no
+  entrega SIGTERM a un hijo). 483 unit, 514 e2e, cov 82,46% / 86,25%.
 - 16/11 · 004 plan: TypeORM 1.1.3 con better-sqlite3 usa UNA conexión (`queryRunner ??=`) y una
   transacción abierta dentro de otra es un SAVEPOINT → `TransactionLock` (FIFO) para reservas.
 - 16/11 · 004-T1: `migrations.ts` (Concert/Reservation/Payment, `IF NOT EXISTS`, índice único

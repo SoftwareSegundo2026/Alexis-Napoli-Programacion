@@ -33,7 +33,7 @@ pushear la rama `tp-7-docker-cd` (nunca `main`) durante T5–T8.
       - El contrato con `GET /health · 200` y `· 503`, y el inventario completo.
       Estimación: 25 min · depende de: T2
 
-- [ ] **T4. Apagado ordenado.** RF-16 · caso 16 (parte)
+- [x] **T4. Apagado ordenado.** RF-16 · caso 16 (parte)
       `ShutdownLogger` (`beforeApplicationShutdown`); `enableShutdownHooks(['SIGTERM', 'SIGINT'],
       { useProcessExit: true })` en `main.ts`.
       Hecho cuando: `pnpm test` pasa: la señal queda registrada con nivel `log`.
