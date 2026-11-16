@@ -55,6 +55,13 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   (.env*, node_modules, dist, base de trabajo, docs/specs), `docker-compose.yml` (IMAGE_TAG,
   env_file, PORT y DATABASE_PATH fijos, volumen, healthcheck, restart: always, init,
   stop_grace_period 20 s). Sin Docker local: se verifica en Actions.
+- 16/11 · 007-T6 (archivos, SIN [x] hasta la corrida de T7): `deploy/deploy.sh <tag>` (valida el
+  tag, exige compose + .env, `PULL=0` para imagen local, `up --wait --wait-timeout`; si falla,
+  logs y exit 1), `deploy/image-manifest.sh` (docker export + GNU tar `--to-command` → SHA-256,
+  modo, dueño y ruta, sin fechas), `deploy/smoke-test.sh` (casos 10, 11 con CANARY, 5, 12 deploy +
+  rollback ci-v1/ci-v2, 6 con `sudo systemctl restart docker`, 16, 1 y 17 con basura en el
+  volumen de otro proyecto; COMPOSE_PROJECT_NAME por escenario). `.gitattributes`: *.sh y
+  Dockerfile con LF. Verificado local solo `bash -n`.
 - 16/11 · 004 plan: TypeORM 1.1.3 con better-sqlite3 usa UNA conexión (`queryRunner ??=`) y una
   transacción abierta dentro de otra es un SAVEPOINT → `TransactionLock` (FIFO) para reservas.
 - 16/11 · 004-T1: `migrations.ts` (Concert/Reservation/Payment, `IF NOT EXISTS`, índice único

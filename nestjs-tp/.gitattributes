@@ -1,0 +1,4 @@
+# Los scripts de despliegue corren en Linux (servidor y Actions): siempre con
+# fin de línea LF, aunque se editen o se clonen en Windows (spec 007).
+*.sh text eol=lf
+Dockerfile text eol=lf
