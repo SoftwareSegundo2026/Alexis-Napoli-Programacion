@@ -71,6 +71,28 @@ export const TOKEN: Shape = {
   token_type: ['string'],
 };
 
+/** Concierto (spec 004). */
+export const CONCERT: Shape = {
+  ConcertId: ['number'],
+  ArtistId: ['number'],
+  ArtistName: ['string', 'null'],
+  Title: ['string'],
+  StartsAt: ['string'],
+  Capacity: ['number'],
+  Price: ['number'],
+  Available: ['number'],
+};
+
+/** Reserva (spec 004): nunca expone el usuario ni el pago interno. */
+export const RESERVATION: Shape = {
+  ReservationId: ['number'],
+  ConcertId: ['number'],
+  Quantity: ['number'],
+  Amount: ['number'],
+  Status: ['string'],
+  CreatedAt: ['string'],
+};
+
 /** Todo error de la API: exactamente `{"detail": "<texto>"}`. */
 export const ERROR: Shape = { detail: ['string'] };
 

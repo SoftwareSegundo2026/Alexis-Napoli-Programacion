@@ -7,6 +7,7 @@ import { AlbumsModule } from './albums/albums.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { validateEnv } from './config/env.validation.js';
 import { ArtistsModule } from './artists/artists.module.js';
+import { ConcertsModule } from './concerts/concerts.module.js';
 import { DatabaseModule } from './database/database.module.js';
 import { GenresModule } from './genres/genres.module.js';
 import { TracksModule } from './tracks/tracks.module.js';
@@ -66,6 +67,7 @@ export const observeEnabled = observeModule !== undefined;
     TracksModule,
     UsersModule,
     AuthModule,
+    ConcertsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

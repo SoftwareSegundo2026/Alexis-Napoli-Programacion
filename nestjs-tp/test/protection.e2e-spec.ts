@@ -23,6 +23,9 @@ const PUBLIC_OPERATIONS = new Set([
   'GET /api/v1/tracks/{id}',
   // Spec 003 (TP-3): el buscador es una lectura del catálogo, pública.
   'GET /api/v1/tracks/search',
+  // Spec 004 (TP-4): consultar conciertos es público (HU-1).
+  'GET /api/v1/concerts',
+  'GET /api/v1/concerts/{id}',
   'POST /api/v1/auth/token',
 ]);
 
@@ -74,9 +77,10 @@ describe('Regresión: ninguna operación queda sin proteger (e2e)', () => {
   const send = (operation: Operation) =>
     request(app.getHttpServer())[operation.method](operation.path);
 
-  // 25 hasta el TP-2; 26 desde la spec 003 (GET /tracks/search).
-  it('el inventario es la API completa (26 operaciones)', () => {
-    expect(operations).toHaveLength(26);
+  // 25 hasta el TP-2; 26 desde la spec 003 (GET /tracks/search); 29 desde la
+  // spec 004 (3 de conciertos).
+  it('el inventario es la API completa (29 operaciones)', () => {
+    expect(operations).toHaveLength(29);
   });
 
   it('toda operación NO pública responde 401 sin credencial', async () => {

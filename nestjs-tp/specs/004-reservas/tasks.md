@@ -14,7 +14,7 @@ Reglas: una tarea por vez, tests primero (en rojo), gates en verde (`lint`, `bui
       candado ejecuta en orden FIFO y sigue con el siguiente aunque uno falle.
       Estimación: 25 min · depende de: —
 
-- [ ] **T2. Conciertos.** RF-1, RF-2, RF-14 · casos 24, 26
+- [x] **T2. Conciertos.** RF-1, RF-2, RF-14 · casos 24, 26
       Entity, DTOs (alta con `StartsAt` con zona y futuro), repository con disponibilidad
       calculada, service, controller (`GET` públicos, `POST` admin); `ArtistsService.remove`
       cuenta conciertos; casos de contrato; `protection.e2e`/`docs.e2e` actualizados.

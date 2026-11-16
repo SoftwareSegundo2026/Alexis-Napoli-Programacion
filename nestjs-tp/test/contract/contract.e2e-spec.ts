@@ -4,6 +4,7 @@ import { App } from 'supertest/types.js';
 import { bearer, seedTestUsers } from '../helpers/auth.js';
 import { createTestApp } from '../helpers/test-app.js';
 import { CATALOG_CASES } from './catalog.cases.js';
+import { CONCERTS_CASES } from './concerts.cases.js';
 import type { ContractCase, ContractContext } from './contract-case.js';
 import { checkResponse } from './shapes.js';
 import { USERS_CASES } from './users.cases.js';
@@ -13,7 +14,11 @@ import { USERS_CASES } from './users.cases.js';
  * su caso exitoso y cada código de error que declara. Un caso que no cumple
  * falla con el nombre `operación · código · caso` y la lista de diferencias.
  */
-const CASES: readonly ContractCase[] = [...CATALOG_CASES, ...USERS_CASES];
+const CASES: readonly ContractCase[] = [
+  ...CATALOG_CASES,
+  ...USERS_CASES,
+  ...CONCERTS_CASES,
+];
 
 const HTTP_METHODS = ['get', 'post', 'put', 'patch', 'delete'];
 
