@@ -1,0 +1,34 @@
+# Lo que NUNCA entra al contexto del build (spec 007 RF-2, RNF-2).
+
+# Secretos: ningún .env llega a la imagen (el ejemplo sí, no tiene secretos).
+.env
+.env.*
+!.env.example
+
+# Se generan dentro del build: lo de la máquina local no sirve (otra plataforma)
+# o está viejo.
+node_modules
+dist
+coverage
+*.tsbuildinfo
+*.log
+
+# La base de TRABAJO local (con datos de quien la usó); la plantilla sí entra.
+data/chinook.db
+data/chinook.db-*
+
+# Documentación, specs y archivos del entorno de desarrollo: no hacen falta.
+.git
+.vscode
+.idea
+.agents
+.opencode
+docs
+consignas
+rubrica
+specs
+deploy
+*.md
+*.pdf
+Dockerfile
+docker-compose.yml

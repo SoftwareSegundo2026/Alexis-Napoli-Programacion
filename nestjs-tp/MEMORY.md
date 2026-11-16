@@ -49,6 +49,12 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   los hooks directo. `createNestApplication()` sin `logger` vuelve al logger por defecto (pisa
   `Logger.overrideLogger`). La señal real y el exit 0 se verifican en Docker (caso 16; Windows no
   entrega SIGTERM a un hijo). 483 unit, 514 e2e, cov 82,46% / 86,25%.
+- 16/11 · 007-T5 (archivos, SIN [x] hasta la corrida de T7): `Dockerfile` (base → build con los 4
+  gates → prod-deps sin `.modules.yaml`/`.pnpm-workspace-state*` → runtime sin npm/npx/corepack/
+  yarn, `USER node`, `/var/lib/chinook` del usuario node, HEALTHCHECK con fetch), `.dockerignore`
+  (.env*, node_modules, dist, base de trabajo, docs/specs), `docker-compose.yml` (IMAGE_TAG,
+  env_file, PORT y DATABASE_PATH fijos, volumen, healthcheck, restart: always, init,
+  stop_grace_period 20 s). Sin Docker local: se verifica en Actions.
 - 16/11 · 004 plan: TypeORM 1.1.3 con better-sqlite3 usa UNA conexión (`queryRunner ??=`) y una
   transacción abierta dentro de otra es un SAVEPOINT → `TransactionLock` (FIFO) para reservas.
 - 16/11 · 004-T1: `migrations.ts` (Concert/Reservation/Payment, `IF NOT EXISTS`, índice único
