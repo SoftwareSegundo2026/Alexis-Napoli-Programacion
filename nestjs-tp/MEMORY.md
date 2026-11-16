@@ -4,8 +4,8 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 
 ## Estado actual
 - TP-1 (`001-chinook-nest`) **cerrado, validado y pusheado** (`91124e0`).
-- TP-2 (`002-auth-roles`): spec, clarify, plan y tareas aprobados. **T1–T5 hechas**; siguiente: T6.
-- Tests: `pnpm test` 204 (25 archivos) y `pnpm test:e2e` 215 (10 archivos) en verde; lint sin avisos;
+- TP-2 (`002-auth-roles`): spec, clarify, plan y tareas aprobados. **T1–T6 hechas**; siguiente: T7.
+- Tests: `pnpm test` 231 (27 archivos) y `pnpm test:e2e` 234 (11 archivos) en verde; lint sin avisos;
   `pnpm exec tsc --noEmit -p tsconfig.json` también limpio (chequea los tipos de `test/`).
 
 ## Decisiones (y por qué)
@@ -45,6 +45,10 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 - 16/11 · 002-T5: `POST /auth/token` (@Public, 200). `LoginDto` solo exige textos (vacío → 401, no
   400). Verificado a mano con el `admin` real de la base (hash de Python, costo 12, ~300 ms).
   `docs.e2e` ajustado: cuenta las 20 operaciones DEL CATÁLOGO y verifica el login sin seguridad.
+- 16/11 · 002-T6: `GET /users/me`, `GET /users` y `POST /users` (admin). La contraseña NO se recorta
+  (RF-1 la compara exacta; prevalece sobre la regla general de recorte). Altas en cola (promesa
+  encadenada). Mutación: sin la cola falla el unit test; el e2e sigue verde porque el índice
+  único de la base es la red de seguridad (las dos capas funcionan).
 
 ## Decisiones del plan 002 a recordar en las próximas tareas
 - Guards globales (`APP_GUARD`, autenticación → roles); lo público con `@Public()`.
@@ -67,5 +71,5 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   comprobar el valor y `JSON.stringify`, no `toHaveProperty`.
 
 ## Próximos pasos
-- 002-T6: `GET /users/me`, `GET /users` (admin), `POST /users` (admin, altas serializadas, 409).
+- 002-T7: `PATCH /users/{id}` (admin): `disabled`/`is_admin` de otros; lo propio → 403; casos 3, 13, 14, 18.
 - Pendiente para el TP-4: test de modificaciones concurrentes (observación de `001/validate.md`).

@@ -46,7 +46,7 @@ Reglas: una tarea por vez, tests primero (en rojo), gates
       200 con credencial usable, 401 genérico, 400 por cuerpo, dos logins simultáneos).
       Estimación: 20 min · depende de: T4
 
-- [ ] **T6. Perfil, listado y alta de usuarios.** RF-7–RF-10, RNF-1
+- [x] **T6. Perfil, listado y alta de usuarios.** RF-7–RF-10, RNF-1
       `GET /users/me`, `GET /users` (admin, paginado), `POST /users` (admin; duplicados → 409;
       altas serializadas).
       Hecho cuando: `pnpm test` pasa los tests de `UsersService` y de los DTOs, y `pnpm test:e2e`
