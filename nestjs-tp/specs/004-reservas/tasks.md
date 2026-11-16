@@ -52,4 +52,14 @@ Reglas: una tarea por vez, tests primero (en rojo), gates en verde (`lint`, `bui
       entero con uno de los dos.
       Estimación: 10 min · depende de: —
 
-Después de T7: `validate.md`, push de la rama con OK, PR y merge del usuario.
+- [ ] **T8. Valores numéricos como parámetros (hallazgo de la validación).** RNF-5
+      La validación encontró que las búsquedas y actualizaciones por id de reservas y pagos
+      (`findOneBy`, `update`) dejan los números escritos como literal en el SQL: el driver de
+      SQLite de TypeORM inlinea todo parámetro `number` (mismo hallazgo que el TP-3). Se pasan a
+      QueryBuilder con `CAST(? AS INTEGER)`. Agregada con aprobación del usuario (16/11).
+      Hecho cuando: un test que registra el SQL ejecutado en alta, consultas, cancelación y
+      completado verifica que ninguna condición compara contra un número literal (en rojo antes
+      del cambio); `LIMIT`/`OFFSET` exceptuados como en la spec 003; gates en verde.
+      Estimación: 15 min · depende de: T7
+
+Después de T8: `validate.md`, push de la rama con OK, PR y merge del usuario.
