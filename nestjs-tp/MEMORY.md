@@ -3,7 +3,8 @@
 Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al terminar **cada tarea**.
 
 ## Estado actual
-- Fase del flujo: `001-chinook-nest` (TP-1) → **T1–T9 hechas**; siguiente: `/sdd-validate`.
+- Fase del flujo: `001-chinook-nest` (TP-1) **cerrado**: T1–T9 hechas y `validate.md` → APROBADO.
+  Siguiente: TP-2 (`002-*`).
 - Specs activas: `specs/001-chinook-nest/` (TP-1) · `specs/000-ejemplo-chinook/` (referencia del docente)
 - Tests: `pnpm test` 151 (21 archivos) y `pnpm test:e2e` 168 (9 archivos) en verde; lint sin avisos; build verde.
 
@@ -64,5 +65,6 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   bloquea). En corridas verdes no queda ninguna. Es inofensivo; se puede borrar a mano.
 
 ## Próximos pasos
-- `/sdd-validate 001-chinook-nest` → `specs/001-chinook-nest/validate.md` (RF → test → resultado).
-- Después: TP-2 (`002-*`: usuarios, login JWT, roles, actividad).
+- TP-2 (`002-*`: usuarios, login JWT, roles, actividad): entrevista y spec. Reemplaza la clave
+  fija del TP-1. Ver plan del docente (`programacion/nestjs-music/.opencode/plan/`).
+- Pendiente para el TP-4: test de modificaciones concurrentes (observación 1 de `validate.md`).
