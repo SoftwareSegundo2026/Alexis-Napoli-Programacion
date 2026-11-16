@@ -76,6 +76,13 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   Actions o con `deploy.sh <sha>` en el servidor, "¿qué pasó a las 3 AM?" con
   `docker compose logs --since/--until | jq` por nivel y por requestId). `.env.example`: API_PORT y
   qué fija el compose. T1–T8 COMPLETAS. Gates 483 unit, 514 e2e, cov 82,46% / 86,25%.
+- 16/11 · 007 tras el merge (PR #5, `ece9aab`): corrida de main 43919954077 verde → caso 9
+  confirmado (publish a GHCR OK; deploy con SSH skipped). HALLAZGO: el paquete GHCR quedó PRIVADO;
+  la organización tiene DESHABILITADOS los paquetes públicos e internos (lo vio el usuario en
+  Package settings) → el README decía "hereda la visibilidad del repo", y era FALSO. Rama
+  `tp-7-ajustes`: compose con `build: .` (un comando sin credenciales: `docker compose up -d --build
+  --wait`, probado en el workflow), README con los dos caminos (código / `docker login ghcr.io` con
+  token `read:packages`), validate y spec RF-17 actualizados.
 - 16/11 · 004 plan: TypeORM 1.1.3 con better-sqlite3 usa UNA conexión (`queryRunner ??=`) y una
   transacción abierta dentro de otra es un SAVEPOINT → `TransactionLock` (FIFO) para reservas.
 - 16/11 · 004-T1: `migrations.ts` (Concert/Reservation/Payment, `IF NOT EXISTS`, índice único

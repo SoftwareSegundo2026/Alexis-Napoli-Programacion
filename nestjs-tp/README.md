@@ -98,17 +98,38 @@ cualquier máquina: lo único que cambia entre entornos es el `.env`.
 
 ### Levantar la API en una máquina limpia (un solo comando)
 
-Solo hace falta Docker con el plugin compose. No hace falta Node ni pnpm:
+Solo hace falta **Docker con el plugin compose**: ni Node ni pnpm. Hay dos caminos.
+
+**A. Desde el código, sin credenciales (recomendado para probarla):**
 
 ```bash
-cp .env.example .env          # completar JWT_SECRET (≥ 32 caracteres)
-docker compose up -d --wait   # baja la imagen publicada y espera a que quede healthy
-curl http://localhost:3300/health   # {"status":"ok","database":"up"}
+git clone https://github.com/SoftwareSegundo2026/Alexis-Napoli-Programacion.git
+cd Alexis-Napoli-Programacion/nestjs-tp
+cp .env.example .env                  # completar JWT_SECRET (≥ 32 caracteres)
+docker compose up -d --build --wait   # construye la imagen (con los gates) y espera healthy
+curl http://localhost:3300/health     # {"status":"ok","database":"up"}
 ```
 
-Para construir la imagen desde el código en lugar de bajarla:
-`docker build -t ghcr.io/softwaresegundo2026/alexis-napoli-programacion:local .` y después
-`IMAGE_TAG=local docker compose up -d --wait`.
+La primera vez tarda unos minutos, porque dentro de la imagen se compila y corren todos los
+tests. Este mismo camino se prueba en cada corrida del workflow (paso "Un solo comando desde
+el código").
+
+**B. Con la imagen ya publicada en `ghcr.io`, la misma que se probó en el pipeline:**
+
+El paquete es **privado**: la organización de GitHub no permite paquetes públicos. Para
+bajarlo hay que identificarse **una vez** con una cuenta que tenga acceso, ya sea un miembro
+de la organización o alguien con acceso al repo, porque el paquete hereda los accesos del
+repo:
+
+```bash
+# Token: GitHub → Settings → Developer settings → Personal access tokens (classic),
+# con el permiso read:packages. Se pega como contraseña.
+docker login ghcr.io -u <usuario-de-github>
+cp .env.example .env                  # completar JWT_SECRET
+docker compose up -d --wait           # baja la imagen latest (o IMAGE_TAG=<sha>) y espera healthy
+```
+
+Sin el `docker login`, este camino responde `denied`.
 
 | Variable (`.env`) | Para qué | Por defecto |
 |---|---|---|
@@ -150,15 +171,18 @@ Con 503, el contenedor queda `unhealthy`.
 Sin los secrets del servidor, `deploy` se saltea con un aviso y la corrida queda verde. El check
 requerido de `main` sigue siendo `gates` (`ci.yml`).
 
-**Evidencia:** [corrida del PR](https://github.com/SoftwareSegundo2026/Alexis-Napoli-Programacion/actions/runs/43915953632),
-con extracto en [`docs/evidencias/007-docker-image-pr.txt`](docs/evidencias/007-docker-image-pr.txt):
-- Las dos imágenes son idénticas (23.456 archivos comparados).
-- Corre sin root y sin toolchain.
-- Ningún secreto en la imagen ni en `docker history`.
-- Despliegue y rollback quedan `healthy`.
-- Vuelve sola tras reiniciar el daemon de Docker.
-- Apagado ordenado con código 0.
-- Con la base rota, nunca queda `healthy`.
+**Evidencia:**
+- [Corrida en `main`](https://github.com/SoftwareSegundo2026/Alexis-Napoli-Programacion/actions/runs/43919954077):
+  la imagen se publicó en `ghcr.io` y `deploy` se salteó con el aviso, porque no hay servidor.
+- [Corrida del PR](https://github.com/SoftwareSegundo2026/Alexis-Napoli-Programacion/actions/runs/43915953632),
+  con extracto en [`docs/evidencias/007-docker-image-pr.txt`](docs/evidencias/007-docker-image-pr.txt):
+  - Las dos imágenes son idénticas (23.456 archivos comparados).
+  - Corre sin root y sin toolchain.
+  - Ningún secreto en la imagen ni en `docker history`.
+  - Despliegue y rollback quedan `healthy`.
+  - Vuelve sola tras reiniciar el daemon de Docker.
+  - Apagado ordenado con código 0.
+  - Con la base rota, nunca queda `healthy`.
 
 ### Preparar un servidor (una sola vez)
 
@@ -172,8 +196,9 @@ con extracto en [`docs/evidencias/007-docker-image-pr.txt`](docs/evidencias/007-
    - `DEPLOY_SSH_KEY`: su clave privada.
    - `DEPLOY_KNOWN_HOSTS`: la huella del servidor, que se obtiene con `ssh-keyscan -H <host>`.
      Sin ella, el SSH no se conecta, para no desplegar en un impostor.
-4. El paquete de `ghcr.io` hereda la visibilidad del repo. Si fuera privado, en el servidor
-   correr una vez `docker login ghcr.io` con un token de solo lectura (`read:packages`).
+4. El paquete de `ghcr.io` es privado (política de la organización). En el servidor, correr
+   **una vez** `docker login ghcr.io` con un token de solo lectura (`read:packages`): Docker
+   guarda la credencial y `deploy.sh` ya puede bajar cada versión.
 
 A partir de ahí, **cada merge a `main` se despliega solo**.
 
