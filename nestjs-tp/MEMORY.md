@@ -4,7 +4,7 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 
 ## Estado actual
 - Fase del flujo: TP-1 (`001`) **cerrado y pusheado**. TP-2: spec y clarify **aprobadas**
-  (ronda 2); siguiente: `plan.md`.
+  (`f235da4`); plan (con `@nestjs/jwt` y `bcryptjs`) y 9 tareas **aprobados**. Siguiente: T1.
 - Specs activas: `002-auth-roles` (TP-2) · `001-chinook-nest` (TP-1) · `000-ejemplo-chinook` (docente)
 - Tests: `pnpm test` 151 (21 archivos) y `pnpm test:e2e` 168 (9 archivos) en verde; lint sin avisos; build verde.
 
