@@ -1,6 +1,7 @@
 import {
   DEFAULT_DATABASE_PATH,
   DEFAULT_JWT_EXPIRES_MINUTES,
+  DEFAULT_LOG_LEVEL,
   DEFAULT_PASSWORD_HASH_ROUNDS,
   DEFAULT_PORT,
   MIN_JWT_SECRET_LENGTH,
@@ -18,6 +19,8 @@ const defaults = {
   PORT: DEFAULT_PORT,
   JWT_EXPIRES_MINUTES: DEFAULT_JWT_EXPIRES_MINUTES,
   PASSWORD_HASH_ROUNDS: DEFAULT_PASSWORD_HASH_ROUNDS,
+  // Spec 007 RF-15: nueva variable validada (se agregó a los defaults esperados).
+  LOG_LEVEL: DEFAULT_LOG_LEVEL,
 };
 
 describe('validateEnv (spec 001 RNF-3, spec 002 RNF-2)', () => {
@@ -68,9 +71,41 @@ describe('validateEnv (spec 001 RNF-3, spec 002 RNF-2)', () => {
       'DATABASE_PATH',
       'JWT_EXPIRES_MINUTES',
       'JWT_SECRET',
+      'LOG_LEVEL', // spec 007 RF-15
       'PASSWORD_HASH_ROUNDS',
       'PORT',
     ]);
+  });
+
+  describe('nivel de log (spec 007 RF-6, RF-15)', () => {
+    it('por defecto es "log"', () => {
+      expect(DEFAULT_LOG_LEVEL).toBe('log');
+      expect(validateEnv(required).LOG_LEVEL).toBe('log');
+    });
+
+    it.each(['fatal', 'error', 'warn', 'log', 'debug', 'verbose'])(
+      'acepta los niveles de Nest (%s)',
+      (level) => {
+        expect(validateEnv({ ...required, LOG_LEVEL: level }).LOG_LEVEL).toBe(
+          level,
+        );
+      },
+    );
+
+    it('acepta mayúsculas y espacios alrededor', () => {
+      expect(validateEnv({ ...required, LOG_LEVEL: ' WARN ' }).LOG_LEVEL).toBe(
+        'warn',
+      );
+    });
+
+    it.each(['loud', 'info', '3'])(
+      'falla al arrancar con un nivel desconocido (%s) y dice cuáles valen (caso 5)',
+      (level) => {
+        expect(() => validateEnv({ ...required, LOG_LEVEL: level })).toThrow(
+          /LOG_LEVEL.*fatal, error, warn, log, debug, verbose/,
+        );
+      },
+    );
   });
 
   describe('secreto de firma de la credencial (RNF-2)', () => {

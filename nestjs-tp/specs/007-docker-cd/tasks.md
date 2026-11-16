@@ -7,7 +7,7 @@ Reglas: una tarea por vez, tests primero (en rojo), gates en verde (`lint`, `bui
 `MEMORY.md`. Las tareas de Docker (T5–T7) se verifican en Actions: el usuario autorizó (16/11)
 pushear la rama `tp-7-docker-cd` (nunca `main`) durante T5–T8.
 
-- [ ] **T1. Logger JSON, saneo y `LOG_LEVEL`.** RF-6, RF-11, RF-14, RF-15 · casos 4 (parte), 5, 15 (parte)
+- [x] **T1. Logger JSON, saneo y `LOG_LEVEL`.** RF-6, RF-11, RF-14, RF-15 · casos 4 (parte), 5, 15 (parte)
       `sanitize.ts`, `json-logger.ts`; `LOG_LEVEL` en `validateEnv` y `.env.example`.
       Hecho cuando: `pnpm test` pasa:
       - `sanitize` tapa Bearer, JWT y valores de `password`/`token`/`secret`/`authorization`/`dni`.

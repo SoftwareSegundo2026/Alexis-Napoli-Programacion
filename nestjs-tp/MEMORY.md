@@ -16,6 +16,15 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   declarada), sin servidor (deploy SSH solo con secrets; `deploy.sh` probado en Actions con el
   runner como servidor), GHCR, logger JSON propio + `requestId` (AsyncLocalStorage). Sin Docker
   local: toda la evidencia de imagen/compose sale de un workflow de Actions.
+- 16/11 · 007 plan: Nest 12 `enableShutdownHooks(signals, { useProcessExit: true })` sale con 0
+  (sin la opción se re-envía la señal → 143); `ExpressAdapter.close()` espera los pedidos en curso
+  (solo corta con `forceCloseConnections`). Inventario del contrato = `MÉTODO ruta · estado`.
+- 16/11 · 007-T1: `src/observability/sanitize.ts` (Bearer, JWT `eyJ…`, campos cuyo NOMBRE contiene
+  password/token/secret/authorization/dni; conserva comillas → el JSON sigue válido; tapa de más
+  antes que de menos) y `json-logger.ts` (`LoggerService`: una línea JSON, `write`/`now`/`requestId`
+  inyectables, parámetros de `error` como Nest: `(stack, context)`). `LOG_LEVEL` en `validateEnv`
+  (los 6 niveles de Nest; los tests de claves/defaults sumaron `LOG_LEVEL`). oxlint sin problemas
+  no imprime nada (exit 0). 453 unit, 495 e2e, cov 82,55% / 85,22%.
 - 16/11 · 004 plan: TypeORM 1.1.3 con better-sqlite3 usa UNA conexión (`queryRunner ??=`) y una
   transacción abierta dentro de otra es un SAVEPOINT → `TransactionLock` (FIFO) para reservas.
 - 16/11 · 004-T1: `migrations.ts` (Concert/Reservation/Payment, `IF NOT EXISTS`, índice único
