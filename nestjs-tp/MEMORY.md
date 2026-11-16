@@ -8,10 +8,74 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 - TP-5 (`005-calidad`) **en curso**: spec, clarify, plan y tareas aprobados; **cerrado**: T1–T7 y `validate.md` → APROBADO (pusheado).
 - TP-6 (`006-ci`) **en curso**: spec, clarify, plan y tareas aprobados; **cerrado**: validate APROBADO, PR #2 mergeado (`d452504`).
 - TP-3 (`003-busqueda`) **cerrado**: validate APROBADO; PR #3 mergeado (`dd511e1`), gates verde.
-- TP-4 (`004-reservas`) **en curso** en la rama `tp-4-reservas`: spec y clarify aprobados
-  (27 casos límite; RF-14 artista con conciertos → 409; RF-15 = pendiente de concurrencia del TP-1).
-  Plan y tareas aprobados (7 tareas + T8 agregada por la validación); T1–T8 cerradas.
-  `validate.md` → APROBADO. Siguiente: push → PR → merge del usuario.
+- TP-4 (`004-reservas`) **cerrado**: validate APROBADO; PR #4 mergeado (`c449730`), gates verde
+  en main (27 casos límite; RF-14 artista con conciertos → 409; RF-15 = pendiente del TP-1; T8
+  agregada por la validación: ids como parámetros).
+- TP-7 (`007-docker-cd`) **validado** en la rama `tp-7-docker-cd`: T1–T8 cerradas, `validate.md`
+  → APROBADO (caso 9 a confirmar en la corrida de main tras el merge). Spec y clarify aprobados
+  (17 RF, 7 RNF, 17 casos). Decisiones: SQLite en volumen (un servicio `api`, adaptación
+  declarada), sin servidor (deploy SSH solo con secrets; `deploy.sh` probado en Actions con el
+  runner como servidor), GHCR, logger JSON propio + `requestId` (AsyncLocalStorage). Sin Docker
+  local: toda la evidencia de imagen/compose sale de un workflow de Actions.
+- 16/11 · 007 plan: Nest 12 `enableShutdownHooks(signals, { useProcessExit: true })` sale con 0
+  (sin la opción se re-envía la señal → 143); `ExpressAdapter.close()` espera los pedidos en curso
+  (solo corta con `forceCloseConnections`). Inventario del contrato = `MÉTODO ruta · estado`.
+- 16/11 · 007-T1: `src/observability/sanitize.ts` (Bearer, JWT `eyJ…`, campos cuyo NOMBRE contiene
+  password/token/secret/authorization/dni; conserva comillas → el JSON sigue válido; tapa de más
+  antes que de menos) y `json-logger.ts` (`LoggerService`: una línea JSON, `write`/`now`/`requestId`
+  inyectables, parámetros de `error` como Nest: `(stack, context)`). `LOG_LEVEL` en `validateEnv`
+  (los 6 niveles de Nest; los tests de claves/defaults sumaron `LOG_LEVEL`). oxlint sin problemas
+  no imprime nada (exit 0). 453 unit, 495 e2e, cov 82,55% / 85,22%.
+- 16/11 · 007-T2: `request-context.ts` (AsyncLocalStorage; middleware con interfaces mínimas
+  `ContextRequest`/`ContextResponse` → tests sin casts; el `finish` vuelve a entrar al contexto con
+  `storage.run`). Registrado PRIMERO en `configureApp`: el plan suponía que el lector de JSON perdía
+  el contexto, pero la MUTACIÓN (middleware antes del lector) dejó todo verde → el lector lo
+  conserva; el caso 4 lo protege. `main.ts`: `logger: JsonLogger` desde el arranque y
+  `abortOnError: false` (por defecto Nest hace `process.abort()` si falla el arranque y no explica
+  nada); el error se registra como `fatal` y sale con 1. `createTestApp(customize, options)`: por
+  defecto `logger: ['error', 'fatal']`. Verificado con la app compilada (script del scratchpad
+  `probe-app.mjs`, mata SOLO a su hijo): JSON, X-Request-Id, sin query ni token; base inválida →
+  `fatal` "file is not a database" y exit 1. 477 unit, 507 e2e, cov 82,25% / 85,78%.
+- 16/11 · 007-T3: `src/health/` (`DatabaseProbe` con `SELECT COUNT(*) FROM sqlite_master`, que lee
+  el archivo; `HealthController` público con `@Res({ passthrough: true })` para el 503, porque una
+  excepción pasaría por el filtro y dejaría solo `{detail}`; interfaz mínima `StatusSetter` → unit
+  sin casts). `/health` excluido del prefijo como `GET /`. Contrato `health.cases.ts` (200 y 503)
+  con doble `ControllableDatabaseProbe` (`test/helpers/health-doubles.ts`, hook
+  `setDatabaseUp`); `health.e2e` con `dataSource.destroy()` REAL → 503. CORRECCIÓN de la spec
+  RNF-6: protection/docs cuentan solo `/api/v1` → siguen en 34; `/health` con tests propios.
+  481 unit, 514 e2e, cov 82,46% / 85,67%.
+- 16/11 · 007-T4: `ShutdownLogger` (`beforeApplicationShutdown(signal)` + `onApplicationShutdown`)
+  en AppModule; `main.ts` → `enableShutdownHooks(['SIGTERM','SIGINT'], { useProcessExit: true })`.
+  OJO: en Nest 12 `app.close()` NO acepta la señal en los tipos (sí en runtime) → el test llama
+  los hooks directo. `createNestApplication()` sin `logger` vuelve al logger por defecto (pisa
+  `Logger.overrideLogger`). La señal real y el exit 0 se verifican en Docker (caso 16; Windows no
+  entrega SIGTERM a un hijo). 483 unit, 514 e2e, cov 82,46% / 86,25%.
+- 16/11 · 007-T5 (archivos, SIN [x] hasta la corrida de T7): `Dockerfile` (base → build con los 4
+  gates → prod-deps sin `.modules.yaml`/`.pnpm-workspace-state*` → runtime sin npm/npx/corepack/
+  yarn, `USER node`, `/var/lib/chinook` del usuario node, HEALTHCHECK con fetch), `.dockerignore`
+  (.env*, node_modules, dist, base de trabajo, docs/specs), `docker-compose.yml` (IMAGE_TAG,
+  env_file, PORT y DATABASE_PATH fijos, volumen, healthcheck, restart: always, init,
+  stop_grace_period 20 s). Sin Docker local: se verifica en Actions.
+- 16/11 · 007-T6 (archivos, SIN [x] hasta la corrida de T7): `deploy/deploy.sh <tag>` (valida el
+  tag, exige compose + .env, `PULL=0` para imagen local, `up --wait --wait-timeout`; si falla,
+  logs y exit 1), `deploy/image-manifest.sh` (docker export + GNU tar `--to-command` → SHA-256,
+  modo, dueño y ruta, sin fechas), `deploy/smoke-test.sh` (casos 10, 11 con CANARY, 5, 12 deploy +
+  rollback ci-v1/ci-v2, 6 con `sudo systemctl restart docker`, 16, 1 y 17 con basura en el
+  volumen de otro proyecto; COMPOSE_PROJECT_NAME por escenario). `.gitattributes`: *.sh y
+  Dockerfile con LF. Verificado local solo `bash -n`.
+- 16/11 · 007-T7 + CIERRE de T5/T6/T7: `.github/workflows/docker.yml` (image en PR y main;
+  publish solo push a main con la MISMA imagen probada vía artefacto; deploy en fila, salteado con
+  `::notice::` sin secrets, valida el tag antes del ssh). PR abierto por el usuario: corrida
+  Docker 43915953632 VERDE AL PRIMER INTENTO (image 343 s; publish/deploy skipped en PR) y CI
+  `gates` verde. Logs: la API de GitHub NO da logs sin admin (403) → el usuario bajó el zip desde la
+  web; extracto en `docs/evidencias/007-docker-image-pr.txt`: casos 1, 3 (23.456 entradas
+  idénticas; ids distintos, informativo), 5, 6, 10, 11, 12 (deploy + rollback), 16, 17; dentro del
+  build 47 archivos unit + 25 e2e. Imagen 103 MB de contenido.
+- 16/11 · 007-T8: README, sección TP-7 (un comando en máquina limpia, variables, imagen, jobs del
+  pipeline con link a la evidencia, preparar el servidor con los 4 secrets, rollback desde
+  Actions o con `deploy.sh <sha>` en el servidor, "¿qué pasó a las 3 AM?" con
+  `docker compose logs --since/--until | jq` por nivel y por requestId). `.env.example`: API_PORT y
+  qué fija el compose. T1–T8 COMPLETAS. Gates 483 unit, 514 e2e, cov 82,46% / 86,25%.
 - 16/11 · 004 plan: TypeORM 1.1.3 con better-sqlite3 usa UNA conexión (`queryRunner ??=`) y una
   transacción abierta dentro de otra es un SAVEPOINT → `TransactionLock` (FIFO) para reservas.
 - 16/11 · 004-T1: `migrations.ts` (Concert/Reservation/Payment, `IF NOT EXISTS`, índice único

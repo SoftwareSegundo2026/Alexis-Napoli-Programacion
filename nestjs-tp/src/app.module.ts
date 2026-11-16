@@ -11,6 +11,8 @@ import { ConcertsModule } from './concerts/concerts.module.js';
 import { DatabaseModule } from './database/database.module.js';
 import { ReservationsModule } from './reservations/reservations.module.js';
 import { GenresModule } from './genres/genres.module.js';
+import { HealthModule } from './health/health.module.js';
+import { ShutdownLogger } from './observability/shutdown-logger.js';
 import { TracksModule } from './tracks/tracks.module.js';
 import { UsersModule } from './users/users.module.js';
 
@@ -70,8 +72,10 @@ export const observeEnabled = observeModule !== undefined;
     AuthModule,
     ConcertsModule,
     ReservationsModule,
+    HealthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  // ShutdownLogger: registra el apagado ordenado (spec 007 RF-16).
+  providers: [AppService, ShutdownLogger],
 })
 export class AppModule {}

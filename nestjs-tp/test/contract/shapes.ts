@@ -93,6 +93,19 @@ export const RESERVATION: Shape = {
   CreatedAt: ['string'],
 };
 
+/** `GET /health` con la base arriba (spec 007 RF-5). */
+export const HEALTH_UP: Shape = {
+  status: ['string'],
+  database: ['string'],
+};
+
+/** `GET /health` con la base caída: además trae `detail`, como todo error (spec 001 RF-9). */
+export const HEALTH_DOWN: Shape = {
+  status: ['string'],
+  database: ['string'],
+  detail: ['string'],
+};
+
 /** Todo error de la API: exactamente `{"detail": "<texto>"}`. */
 export const ERROR: Shape = { detail: ['string'] };
 

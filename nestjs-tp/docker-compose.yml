@@ -1,0 +1,45 @@
+# API en Docker (spec 007 RF-4). Un solo servicio: la base es SQLite, un archivo
+# que vive en el volumen `chinook-data` (ver "Adaptaciones a la consigna" en la
+# spec: no hay un servidor de base del cual depender).
+#
+# Uso: con Docker y un .env (ver .env.example) →  docker compose up -d --wait
+# Versión: IMAGE_TAG=<sha del commit> (por defecto latest). El rollback es
+# volver a levantar con el sha anterior (ver deploy/deploy.sh y el README).
+name: chinook
+
+services:
+  api:
+    image: ghcr.io/softwaresegundo2026/alexis-napoli-programacion:${IMAGE_TAG:-latest}
+    # Secretos y configuración del entorno (JWT_SECRET, LOG_LEVEL…). Nunca en la imagen.
+    env_file: .env
+    # Fijos dentro del contenedor (le ganan al .env): el healthcheck y el volumen
+    # dependen de ellos. Desde afuera se cambia API_PORT.
+    environment:
+      PORT: "3000"
+      DATABASE_PATH: /var/lib/chinook/chinook.db
+    ports:
+      - "${API_PORT:-3300}:3000"
+    volumes:
+      - chinook-data:/var/lib/chinook
+    # "Ready" = GET /health responde 200, lo que exige una consulta real a la base.
+    # Si no, el contenedor queda unhealthy (RF-4, RF-5).
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/health').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))"
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 20s
+      start_interval: 2s
+    # Vuelve solo si el proceso termina o el servidor (o Docker) se reinicia.
+    restart: always
+    # Un mini proceso 1 que reenvía SIGTERM a Node y recoge procesos huérfanos.
+    init: true
+    # Tiempo para el apagado ordenado (RF-16) antes de que Docker mate el proceso.
+    stop_grace_period: 20s
+
+volumes:
+  chinook-data:

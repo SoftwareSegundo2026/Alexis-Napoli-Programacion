@@ -91,6 +91,127 @@ Configuración de la regla:
 [permisos del token](docs/evidencias/006-permisos-token.png).
 Detalle completo en [`specs/006-ci/validate.md`](specs/006-ci/validate.md).
 
+## Docker, despliegue continuo y observabilidad (TP-7)
+
+Spec: [`specs/007-docker-cd/`](specs/007-docker-cd/spec.md). La misma imagen corre en
+cualquier máquina: lo único que cambia entre entornos es el `.env`.
+
+### Levantar la API en una máquina limpia (un solo comando)
+
+Solo hace falta Docker con el plugin compose. No hace falta Node ni pnpm:
+
+```bash
+cp .env.example .env          # completar JWT_SECRET (≥ 32 caracteres)
+docker compose up -d --wait   # baja la imagen publicada y espera a que quede healthy
+curl http://localhost:3300/health   # {"status":"ok","database":"up"}
+```
+
+Para construir la imagen desde el código en lugar de bajarla:
+`docker build -t ghcr.io/softwaresegundo2026/alexis-napoli-programacion:local .` y después
+`IMAGE_TAG=local docker compose up -d --wait`.
+
+| Variable (`.env`) | Para qué | Por defecto |
+|---|---|---|
+| `JWT_SECRET` | Firma de credenciales. **Obligatoria**; sin ella no arranca | — |
+| `LOG_LEVEL` | `fatal`, `error`, `warn`, `log`, `debug` o `verbose` | `log` |
+| `JWT_EXPIRES_MINUTES`, `PASSWORD_HASH_ROUNDS` | Como en el TP-2 | 30, 12 |
+| `API_PORT` | Puerto del host (el contenedor siempre escucha en 3000) | 3300 |
+| `IMAGE_TAG` | Versión de la imagen: el sha de un commit de `main` | `latest` |
+
+Una variable mal configurada (por ejemplo `LOG_LEVEL=loud`) impide arrancar, con un mensaje
+que nombra la variable. La base vive en el volumen `chinook-data`: sobrevive a reinicios y
+redespliegues.
+
+### La imagen
+
+[`Dockerfile`](Dockerfile) en tres etapas:
+1. **build:** instala, compila y corre `lint`, `build`, `test` y `test:e2e`. Si un gate falla,
+   no hay imagen.
+2. **prod-deps:** instala solo las dependencias de producción.
+3. **runtime:** la que se publica.
+   - Node 24.14.1 slim, fijado por digest.
+   - Corre con el usuario `node`, no root.
+   - No trae npm, pnpm ni TypeScript.
+   - No trae ningún `.env`: el [`.dockerignore`](.dockerignore) los deja afuera.
+   - Tiene un `HEALTHCHECK` contra `/health`.
+
+`GET /health` es público, está fuera de `/api/v1` y consulta el archivo de la base. Responde
+200 `{"status":"ok","database":"up"}` o 503 `{"status":"error","database":"down","detail":…}`.
+Con 503, el contenedor queda `unhealthy`.
+
+### Pipeline: [`.github/workflows/docker.yml`](../.github/workflows/docker.yml)
+
+| Job | Cuándo | Qué hace |
+|---|---|---|
+| `image` | Cada PR y cada push a `main` | Construye la imagen 2 veces sin caché (con los gates adentro), compara su contenido y corre [`deploy/smoke-test.sh`](deploy/smoke-test.sh) con el runner como servidor |
+| `publish` | Push a `main` | Sube a `ghcr.io` **la misma imagen probada**, con el sha del commit y `latest` (token de la corrida, sin credenciales en el repo) |
+| `deploy` | Después de `publish`, o a mano | Copia el compose y ejecuta [`deploy/deploy.sh <sha>`](deploy/deploy.sh) por SSH; espera `healthy` y, si no llega, la corrida queda en rojo |
+
+Sin los secrets del servidor, `deploy` se saltea con un aviso y la corrida queda verde. El check
+requerido de `main` sigue siendo `gates` (`ci.yml`).
+
+**Evidencia:** [corrida del PR](https://github.com/SoftwareSegundo2026/Alexis-Napoli-Programacion/actions/runs/43915953632),
+con extracto en [`docs/evidencias/007-docker-image-pr.txt`](docs/evidencias/007-docker-image-pr.txt):
+- Las dos imágenes son idénticas (23.456 archivos comparados).
+- Corre sin root y sin toolchain.
+- Ningún secreto en la imagen ni en `docker history`.
+- Despliegue y rollback quedan `healthy`.
+- Vuelve sola tras reiniciar el daemon de Docker.
+- Apagado ordenado con código 0.
+- Con la base rota, nunca queda `healthy`.
+
+### Preparar un servidor (una sola vez)
+
+1. Instalar Docker con el plugin compose y crear un usuario de despliegue que pueda usar
+   Docker (grupo `docker`).
+2. Crear la carpeta `~/chinook` de ese usuario y poner adentro el `.env` de producción. El
+   `.env` nunca sale del repo ni de la imagen.
+3. Cargar en GitHub (*Settings → Secrets and variables → Actions*) estos secrets:
+   - `DEPLOY_HOST`: dirección del servidor.
+   - `DEPLOY_USER`: el usuario de despliegue.
+   - `DEPLOY_SSH_KEY`: su clave privada.
+   - `DEPLOY_KNOWN_HOSTS`: la huella del servidor, que se obtiene con `ssh-keyscan -H <host>`.
+     Sin ella, el SSH no se conecta, para no desplegar en un impostor.
+4. El paquete de `ghcr.io` hereda la visibilidad del repo. Si fuera privado, en el servidor
+   correr una vez `docker login ghcr.io` con un token de solo lectura (`read:packages`).
+
+A partir de ahí, **cada merge a `main` se despliega solo**.
+
+### Rollback
+
+Volver a una versión anterior es desplegar el sha de una imagen ya publicada; no se
+reconstruye nada:
+- **Desde GitHub:** *Actions → Docker → Run workflow* con `tag` = sha anterior.
+- **En el servidor:** `cd ~/chinook && ./deploy.sh <sha anterior>`.
+
+Los tags publicados se ven en la página del paquete en GitHub (*Packages*).
+
+### "¿Qué pasó en producción a las 3 AM?"
+
+Cada evento es **una línea JSON**, con `timestamp` (UTC), `level`, `message` y `context`.
+Lo que pasa dentro de un pedido lleva además su `requestId`.
+- **Cada pedido** deja una línea con método, ruta (sin la query), estado y duración. El nivel
+  es `log` (2xx/3xx), `warn` (4xx) o `error` (5xx).
+- **Un error 500** deja además el detalle técnico con el mismo `requestId`.
+- **El cliente recibe ese id** en el header `X-Request-Id`, y si lo manda, se respeta.
+- **Nunca se registran** cuerpos, headers ni query strings. Contraseñas, tokens y otros campos
+  sensibles se tapan como `[REDACTED]`.
+
+```bash
+cd ~/chinook
+# Errores de esa hora (los timestamps están en UTC)
+docker compose logs --no-log-prefix --since 2026-11-16T06:00:00Z --until 2026-11-16T07:00:00Z api \
+  | jq -c 'select(.level == "error" or .level == "fatal")'
+# Todo lo de un pedido, a partir del requestId de la línea anterior o del cliente
+docker compose logs --no-log-prefix api | jq -c 'select(.requestId == "<id>")'
+# ¿Se reinició o se apagó? Apagados ordenados, arranques fallidos y cantidad de reinicios
+docker compose logs --no-log-prefix api | jq -c 'select(.context == "Shutdown" or .level == "fatal")'
+docker inspect --format '{{.RestartCount}} reinicios · {{.State.Health.Status}}' "$(docker compose ps -q api)"
+```
+
+La telemetría de NestJS Observe sigue siendo opcional: solo se activa con `OBSERVE_APP_KEY`
+y `OBSERVE_APP_SECRET` en el `.env`.
+
 ---
 
 ## Cómo arrancar

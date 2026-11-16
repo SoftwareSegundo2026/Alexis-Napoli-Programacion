@@ -1,5 +1,9 @@
+import { LOG_LEVELS, type LogLevelName } from '../observability/json-logger.js';
+
 /** Variables de entorno que la aplicación valida al arrancar. */
 export interface EnvironmentVariables {
+  /** Nivel mínimo de log (spec 007 RF-15). */
+  LOG_LEVEL: LogLevelName;
   /** Secreto con el que se firman las credenciales (spec 002, RNF-2). Obligatorio. */
   JWT_SECRET: string;
   /** Minutos de vida de una credencial (spec 002, RNF-2). */
@@ -17,6 +21,7 @@ export const DEFAULT_JWT_EXPIRES_MINUTES = 30;
 /** Igual al costo de los hash que ya trae la base (`$2b$12$`). */
 export const DEFAULT_PASSWORD_HASH_ROUNDS = 12;
 export const MIN_JWT_SECRET_LENGTH = 32;
+export const DEFAULT_LOG_LEVEL: LogLevelName = 'log';
 
 /**
  * Se pasa a `ConfigModule.forRoot({ validate })`. Si lanza, la aplicación no
@@ -49,7 +54,23 @@ export function validateEnv(
       min: 1,
       max: 65535,
     }),
+    LOG_LEVEL: readLogLevel(config.LOG_LEVEL),
   };
+}
+
+/** Nivel de log; uno desconocido corta el arranque diciendo cuáles valen. */
+function readLogLevel(value: unknown): LogLevelName {
+  const text = readText(value);
+  if (text === undefined) {
+    return DEFAULT_LOG_LEVEL;
+  }
+  const level = LOG_LEVELS.find((name) => name === text.toLowerCase());
+  if (level === undefined) {
+    throw new Error(
+      `LOG_LEVEL inválido ("${text}"): tiene que ser uno de ${LOG_LEVELS.join(', ')}.`,
+    );
+  }
+  return level;
 }
 
 /** Texto recortado, o `undefined` si no viene o queda vacío. */
