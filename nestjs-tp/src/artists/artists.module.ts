@@ -9,5 +9,7 @@ import { Artist } from './entities/artist.entity.js';
   imports: [TypeOrmModule.forFeature([Artist])],
   controllers: [ArtistsController],
   providers: [ArtistsService, ArtistsRepository],
+  // Álbumes lo usa para validar que el ArtistId exista (RF-9).
+  exports: [ArtistsRepository],
 })
 export class ArtistsModule {}

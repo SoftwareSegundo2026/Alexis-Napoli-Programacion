@@ -45,7 +45,7 @@ Reglas: una tarea por vez, tests primero (en rojo), gates
       `test/artists.e2e-spec.ts`.
       Estimación: 25 min · depende de: T4
 
-- [ ] **T6. Álbumes: CRUD completo con `ArtistName`.** RF-1, RF-2, RF-3, RF-4, RF-6, RF-7, RF-8, RF-9, RF-12
+- [x] **T6. Álbumes: CRUD completo con `ArtistName`.** RF-1, RF-2, RF-3, RF-4, RF-6, RF-7, RF-8, RF-9, RF-12
       Reemplaza el andamio `albums` de la base (los tests "should be defined" se
       convierten en tests reales). `ArtistId` inexistente → 400; 409 si tiene pistas.
       Hecho cuando: `pnpm test` pasa los tests del service y `pnpm test:e2e` pasa

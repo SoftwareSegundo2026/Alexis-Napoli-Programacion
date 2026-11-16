@@ -3,9 +3,9 @@
 Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al terminar **cada tarea**.
 
 ## Estado actual
-- Fase del flujo: `001-chinook-nest` (TP-1) → implementando. **T1–T5 hechas**; siguiente: T6 (álbumes).
+- Fase del flujo: `001-chinook-nest` (TP-1) → implementando. **T1–T6 hechas**; siguiente: T7 (pistas).
 - Specs activas: `specs/001-chinook-nest/` (TP-1) · `specs/000-ejemplo-chinook/` (referencia del docente)
-- Tests: `pnpm test` 96 (16 archivos) y `pnpm test:e2e` 63 (5 archivos) en verde; lint y build en verde.
+- Tests: `pnpm test` 118 (18 archivos) y `pnpm test:e2e` 80 (6 archivos) en verde; lint sin avisos; build verde.
 
 ## Decisiones (y por qué)
 - 15/11 · Base `programacion/nestjs-music`; constitución del docente sin cambios; lint con
@@ -33,6 +33,11 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   conteo de referencias con SQL parametrizado sobre `Track`. Mensajes 409 en inglés, con la causa.
 - 16/11 · T5: campos **opcionales** (`ImageUrl`) usan `@IsOptional()`: `null` quita el valor. Los
   **obligatorios** en PATCH usan `@IfPresent()`: `null` → 400.
+- 16/11 · T6: andamio `albums` reemplazado; sus 2 tests "should be defined" se **conservaron**
+  (ahora con mocks) y se sumaron tests reales. `ArtistName` vía `@ManyToOne` de solo lectura;
+  el repository relee tras guardar. `ArtistsModule` exporta su repository para validar `ArtistId`.
+- 16/11 · T6: id relacionado inexistente → 400 `"ArtistId N does not match any artist"`; se
+  chequea DESPUÉS del 404 del propio álbum (primero existe lo pedido, después sus datos).
 
 ## Aprendizajes y errores a evitar
 - `ConfigModule.forRoot({ validate })` valida al **importar** `app.module`, no en `init()`.
@@ -45,5 +50,5 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 - `test/app.e2e-spec.ts` (de la base) no pasa `prettier --check`; no se tocó.
 
 ## Próximos pasos
-- T6: álbumes (reemplaza el andamio `albums`; `ArtistName`; `ArtistId` inexistente → 400; 409 si tiene pistas).
-- Pendiente de T6: el andamio `albums` tiene 2 warnings de lint (parámetros sin usar).
+- T7: pistas (`AlbumTitle`, `GenreName`, `MediaTypeName`; MediaType/InvoiceLine/PlaylistTrack de
+  solo lectura; 409 si está en facturas o playlists; `UnitPrice` numérico).
