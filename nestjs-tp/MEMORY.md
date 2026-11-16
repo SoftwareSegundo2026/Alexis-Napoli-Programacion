@@ -35,6 +35,14 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   defecto `logger: ['error', 'fatal']`. Verificado con la app compilada (script del scratchpad
   `probe-app.mjs`, mata SOLO a su hijo): JSON, X-Request-Id, sin query ni token; base inválida →
   `fatal` "file is not a database" y exit 1. 477 unit, 507 e2e, cov 82,25% / 85,78%.
+- 16/11 · 007-T3: `src/health/` (`DatabaseProbe` con `SELECT COUNT(*) FROM sqlite_master`, que lee
+  el archivo; `HealthController` público con `@Res({ passthrough: true })` para el 503, porque una
+  excepción pasaría por el filtro y dejaría solo `{detail}`; interfaz mínima `StatusSetter` → unit
+  sin casts). `/health` excluido del prefijo como `GET /`. Contrato `health.cases.ts` (200 y 503)
+  con doble `ControllableDatabaseProbe` (`test/helpers/health-doubles.ts`, hook
+  `setDatabaseUp`); `health.e2e` con `dataSource.destroy()` REAL → 503. CORRECCIÓN de la spec
+  RNF-6: protection/docs cuentan solo `/api/v1` → siguen en 34; `/health` con tests propios.
+  481 unit, 514 e2e, cov 82,46% / 85,67%.
 - 16/11 · 004 plan: TypeORM 1.1.3 con better-sqlite3 usa UNA conexión (`queryRunner ??=`) y una
   transacción abierta dentro de otra es un SAVEPOINT → `TransactionLock` (FIFO) para reservas.
 - 16/11 · 004-T1: `migrations.ts` (Concert/Reservation/Payment, `IF NOT EXISTS`, índice único

@@ -15,6 +15,8 @@ export interface ContractContext {
   setPaymentMode(mode: 'approve' | 'reject'): void;
   /** Fija la hora del reloj de prueba (`null` = la hora real). */
   setNow(date: Date | null): void;
+  /** Hace que el chequeo de la base de prueba responda arriba o caída (spec 007). */
+  setDatabaseUp(up: boolean): void;
 }
 
 /**

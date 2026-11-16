@@ -7,15 +7,22 @@ import {
   FakeClock,
   withDoubles,
 } from '../helpers/reservations-doubles.js';
+import {
+  ControllableDatabaseProbe,
+  withDatabaseProbe,
+} from '../helpers/health-doubles.js';
 import { createTestApp } from '../helpers/test-app.js';
 import { CATALOG_CASES } from './catalog.cases.js';
 import { CONCERTS_CASES } from './concerts.cases.js';
+import { HEALTH_CASES } from './health.cases.js';
 import { RESERVATIONS_CASES } from './reservations.cases.js';
 
 /** Medio de pago de prueba: el caso 402 lo hace rechazar (spec 004). */
 const gateway = new ControllablePaymentGateway();
 /** Reloj de prueba: "completar" exige que el concierto ya haya empezado. */
 const clock = new FakeClock();
+/** Chequeo de la base de prueba: el caso 503 de /health lo da por caído (spec 007). */
+const probe = new ControllableDatabaseProbe();
 import type { ContractCase, ContractContext } from './contract-case.js';
 import { checkResponse } from './shapes.js';
 import { USERS_CASES } from './users.cases.js';
@@ -30,6 +37,7 @@ const CASES: readonly ContractCase[] = [
   ...USERS_CASES,
   ...CONCERTS_CASES,
   ...RESERVATIONS_CASES,
+  ...HEALTH_CASES,
 ];
 
 const HTTP_METHODS = ['get', 'post', 'put', 'patch', 'delete'];
@@ -70,7 +78,9 @@ describe('Contrato de la API (e2e)', () => {
   let viewerToken = '';
 
   beforeAll(async () => {
-    app = await createTestApp(withDoubles(gateway, clock));
+    app = await createTestApp((builder) =>
+      withDatabaseProbe(probe)(withDoubles(gateway, clock)(builder)),
+    );
     const users = await seedTestUsers(app);
     adminToken = users.adminToken;
     viewerToken = users.viewerToken;
@@ -89,6 +99,9 @@ describe('Contrato de la API (e2e)', () => {
     },
     setNow: (date) => {
       clock.current = date ?? new Date();
+    },
+    setDatabaseUp: (up) => {
+      probe.up = up;
     },
     async create(base, body) {
       const response = await context

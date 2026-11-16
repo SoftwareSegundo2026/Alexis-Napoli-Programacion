@@ -137,8 +137,11 @@ archivo no se puede leer como base o la conexión está cerrada (decisión 1; ve
 - **RNF-5:** Permisos mínimos: el token de la corrida solo tiene `packages: write` en el job que
   publica; publicar y desplegar no corren en PRs.
 - **RNF-6:** Gates locales en verde, cobertura ≥ 75/75, contrato del TP-5 con `GET /health`
-  (`protection.e2e` y `docs.e2e` pasan a 35 operaciones); el trabajo entra por la rama
-  `tp-7-docker-cd` y un PR.
+  (200 y 503); el trabajo entra por la rama `tp-7-docker-cd` y un PR. *Corrección en T3:* el
+  borrador decía que `protection.e2e` y `docs.e2e` "pasan a 35 operaciones", pero esos conteos
+  son de las rutas bajo `/api/v1` y `/health` está fuera del prefijo, como `GET /`. Los conteos
+  siguen en 34, y `/health` se verifica en tests propios: público, sin Bearer, documentado con
+  200 y 503.
 - **RNF-7:** Para las pruebas en Actions, el `JWT_SECRET` se **genera al azar en la corrida** y
   se escribe en un `.env` temporal del runner; nunca se versiona (constitución §5).
 

@@ -152,4 +152,16 @@ describe('Regresión: ninguna operación queda sin proteger (e2e)', () => {
       ]);
     }
   });
+
+  // Spec 007 RF-5: el chequeo de salud está FUERA de /api/v1 (como `GET /`), así
+  // que no entra en el inventario de arriba; se verifica acá, explícitamente.
+  it('GET /health es público: responde sin credencial y no declara Bearer', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/docs-json')
+      .expect(200);
+    const document = response.body as OpenAPIObject;
+
+    expect(document.paths['/health']?.get?.security ?? []).toEqual([]);
+    await request(app.getHttpServer()).get('/health').expect(200);
+  });
 });

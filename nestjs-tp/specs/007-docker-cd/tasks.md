@@ -25,7 +25,7 @@ pushear la rama `tp-7-docker-cd` (nunca `main`) durante T5–T8.
       - Un 500 real con `Authorization` deja un error con `requestId` y sin el token.
       Estimación: 30 min · depende de: T1
 
-- [ ] **T3. `GET /health`.** RF-5 · casos 2, 13
+- [x] **T3. `GET /health`.** RF-5 · casos 2, 13
       `DatabaseProbe`, `HealthController` (fuera del prefijo, público, documentado), doble del
       probe en el contrato, `protection.e2e`/`docs.e2e` → 35; `/health` 200 en nivel `debug`.
       Hecho cuando: `pnpm test:e2e` pasa:

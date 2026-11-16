@@ -36,9 +36,13 @@ export function configureApp<T extends NestExpressApplication>(app: T): T {
   app.useBodyParser('json');
   app.use(deferJsonSyntaxError);
 
-  // Contrato: todas las rutas bajo /api/v1. `GET /` (saludo de la base) queda afuera.
+  // Contrato: todas las rutas bajo /api/v1. `GET /` (saludo de la base) y
+  // `GET /health` (chequeo de salud de Docker, spec 007 RF-5) quedan afuera.
   app.setGlobalPrefix(API_PREFIX, {
-    exclude: [{ path: '/', method: RequestMethod.GET }],
+    exclude: [
+      { path: '/', method: RequestMethod.GET },
+      { path: 'health', method: RequestMethod.GET },
+    ],
   });
   app.useGlobalInterceptors(new BodyParseErrorInterceptor());
   app.useGlobalPipes(new RequestValidationPipe());

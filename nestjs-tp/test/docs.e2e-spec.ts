@@ -123,6 +123,14 @@ describe('Documentación interactiva (e2e) — RF-14', () => {
     expect(all).toHaveLength(34);
   });
 
+  // Spec 007 RF-5: fuera de /api/v1, así que no suma al conteo de arriba.
+  it('documenta GET /health con 200 y 503, fuera del prefijo', () => {
+    const health = document.paths['/health']?.get;
+    expect(health).toBeDefined();
+    expect(Object.keys(health?.responses ?? {}).sort()).toEqual(['200', '503']);
+    expect(document.paths['/api/v1/health']).toBeUndefined();
+  });
+
   it('el esquema de usuario no expone la contraseña ni el hash (RNF-1)', () => {
     const schemas = document.components?.schemas ?? {};
     const userFields = Object.keys(
