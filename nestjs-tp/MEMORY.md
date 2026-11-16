@@ -4,7 +4,7 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 
 ## Estado actual
 - TP-1 (`001-chinook-nest`) **cerrado, validado y pusheado** (`91124e0`).
-- TP-2 (`002-auth-roles`): **T1–T9 hechas**; siguiente: `/sdd-validate 002-auth-roles`.
+- TP-2 (`002-auth-roles`) **cerrado**: T1–T9 y `validate.md` → APROBADO. Siguiente: TP-5.
 - Tests: `pnpm test` 246 (29 archivos) y `pnpm test:e2e` 254 (13 archivos) en verde; lint sin avisos;
   `pnpm exec tsc --noEmit -p tsconfig.json` también limpio (chequea los tipos de `test/`).
 
@@ -84,5 +84,5 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   comprobar el valor y `JSON.stringify`, no `toHaveProperty`.
 
 ## Próximos pasos
-- `/sdd-validate 002-auth-roles` → `specs/002-auth-roles/validate.md`; después TP-5.
+- TP-5 (suite de calidad): leer consigna → entrevista → spec `005-*`.
 - Pendiente para el TP-4: test de modificaciones concurrentes (observación de `001/validate.md`).
