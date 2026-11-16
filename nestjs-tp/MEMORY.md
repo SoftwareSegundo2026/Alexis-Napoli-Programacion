@@ -6,7 +6,7 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 - TP-1 (`001-chinook-nest`) **cerrado, validado y pusheado** (`91124e0`).
 - TP-2 (`002-auth-roles`) **cerrado**: T1–T9 y `validate.md` → APROBADO.
 - TP-5 (`005-calidad`) **en curso**: spec, clarify, plan y tareas aprobados; **cerrado**: T1–T7 y `validate.md` → APROBADO (pusheado).
-- TP-6 (`006-ci`) **en curso**: spec, clarify, plan y tareas aprobados; T1 cerrada. Siguiente: T2.
+- TP-6 (`006-ci`) **en curso**: spec, clarify, plan y tareas aprobados; T1–T2 cerradas. Siguiente: T3.
 - Tests: `pnpm test` 279 (31 archivos) y `pnpm test:e2e` 380 (17 archivos) en verde; lint sin avisos;
   `pnpm exec tsc --noEmit -p tsconfig.json` también limpio (chequea los tipos de `test/`).
 - Cobertura (unit, todo `src/`): líneas 76,52% (476/622, **146 sin cubrir**) · ramas 80,4%
@@ -106,6 +106,12 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   pnpm@12.6.0`. pnpm 12 escribe en el lockfile una sección `packageManagerDependencies` con su
   propia versión e integridad (158 líneas): NO es dependencia de la app; se commitea para que el
   install congelado de CI coincida. Mutación: error de tipos en `test/` → `typecheck` sale 2.
+- 16/11 · 006-T2: `.github/workflows/ci.yml` (raíz). 1.ª corrida, push de `7ab5890`: **verde en
+  47 s**, 7 gates separados, artefacto `cobertura` — github.com/SoftwareSegundo2026/
+  Alexis-Napoli-Programacion/actions/runs/43884819522. Re-ejecución (intento 2): cache restaurada
+  (65 MB, último uso 14:26; guardado 5 s → 0 s). Permisos del token: `Contents: read`, `Metadata:
+  read` (captura `docs/evidencias/006-permisos-token.png`). Sin parser YAML local: la validación es
+  la corrida. Logs de Actions vía API exigen admin; estado, pasos, caches y artefactos no.
 - **Desde que `main` quede protegida (TP-6 T3): todo por RAMA + PR** (spec 006 RF-9).
 
 ## Decisiones del plan 002 a recordar en las próximas tareas

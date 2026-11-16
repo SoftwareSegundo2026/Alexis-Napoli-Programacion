@@ -15,7 +15,7 @@ T1–T2 van a `main` (antes de la regla); T3–T4 y el cierre, por rama + PR (RF
       cambiar el lockfile; los 5 gates en verde.
       Estimación: 10 min · depende de: —
 
-- [ ] **T2. Workflow de CI.** RF-1–RF-4, RF-6–RF-8, RNF-1–RNF-4, RNF-6
+- [x] **T2. Workflow de CI.** RF-1–RF-4, RF-6–RF-8, RNF-1–RNF-4, RNF-6
       `.github/workflows/ci.yml` en la raíz, job `gates`, pasos según el plan, cada step
       comentado en español. Commit en `main` y push (con OK).
       Hecho cuando: la primera corrida en GitHub del push a `main` termina en **verde** con
