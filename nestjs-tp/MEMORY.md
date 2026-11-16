@@ -3,8 +3,8 @@
 Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al terminar **cada tarea**.
 
 ## Estado actual
-- Fase del flujo: Fase 0 (arnés + base) cerrada. Siguiente: spec `001-chinook-nest` (TP-1).
-- Specs activas: `specs/000-ejemplo-chinook/` (referencia del docente)
+- Fase del flujo: `001-chinook-nest` (TP-1) → spec, clarify, plan y tasks **aprobados**. Siguiente: T1.
+- Specs activas: `specs/001-chinook-nest/` (TP-1) · `specs/000-ejemplo-chinook/` (referencia del docente)
 - Tests: `pnpm lint`, `pnpm build`, `pnpm test` (3) y `pnpm test:e2e` (1) en verde sobre la base.
 
 ## Decisiones (y por qué)
@@ -20,4 +20,4 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 - (vacío por ahora)
 
 ## Próximos pasos
-- `/sdd-spec 001-chinook-nest`: entrevista (máx. 5 preguntas) y spec en borrador.
+- `/sdd-implement 001-chinook-nest T1` (base de datos y configuración).
