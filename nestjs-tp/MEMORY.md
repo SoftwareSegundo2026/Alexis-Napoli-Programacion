@@ -62,6 +62,14 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   rollback ci-v1/ci-v2, 6 con `sudo systemctl restart docker`, 16, 1 y 17 con basura en el
   volumen de otro proyecto; COMPOSE_PROJECT_NAME por escenario). `.gitattributes`: *.sh y
   Dockerfile con LF. Verificado local solo `bash -n`.
+- 16/11 · 007-T7 + CIERRE de T5/T6/T7: `.github/workflows/docker.yml` (image en PR y main;
+  publish solo push a main con la MISMA imagen probada vía artefacto; deploy en fila, salteado con
+  `::notice::` sin secrets, valida el tag antes del ssh). PR abierto por el usuario: corrida
+  Docker 43915953632 VERDE AL PRIMER INTENTO (image 343 s; publish/deploy skipped en PR) y CI
+  `gates` verde. Logs: la API de GitHub NO da logs sin admin (403) → el usuario bajó el zip desde la
+  web; extracto en `docs/evidencias/007-docker-image-pr.txt`: casos 1, 3 (23.456 entradas
+  idénticas; ids distintos, informativo), 5, 6, 10, 11, 12 (deploy + rollback), 16, 17; dentro del
+  build 47 archivos unit + 25 e2e. Imagen 103 MB de contenido.
 - 16/11 · 004 plan: TypeORM 1.1.3 con better-sqlite3 usa UNA conexión (`queryRunner ??=`) y una
   transacción abierta dentro de otra es un SAVEPOINT → `TransactionLock` (FIFO) para reservas.
 - 16/11 · 004-T1: `migrations.ts` (Concert/Reservation/Payment, `IF NOT EXISTS`, índice único

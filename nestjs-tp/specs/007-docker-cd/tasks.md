@@ -39,20 +39,20 @@ pushear la rama `tp-7-docker-cd` (nunca `main`) durante T5–T8.
       Hecho cuando: `pnpm test` pasa: la señal queda registrada con nivel `log`.
       Estimación: 10 min · depende de: T1
 
-- [ ] **T5. Imagen y compose.** RF-1–RF-4, RF-7, RNF-1, RNF-2
+- [x] **T5. Imagen y compose.** RF-1–RF-4, RF-7, RNF-1, RNF-2
       `Dockerfile` (build con gates → prod-deps → runtime no root, sin npm/pnpm/tsc),
       `.dockerignore`, `docker-compose.yml` (volumen, healthcheck, `restart: always`, `init`).
       Hecho cuando: el job `image` de T7 construye la imagen y `docker compose up --wait` queda
       `healthy` (se verifica junto con T7; localmente no hay Docker).
       Estimación: 25 min · depende de: T3, T4
 
-- [ ] **T6. Scripts de despliegue y evidencia.** RF-9, RF-10, RNF-1, RNF-7 · casos 1, 3, 5, 6, 10, 11, 12, 16, 17
+- [x] **T6. Scripts de despliegue y evidencia.** RF-9, RF-10, RNF-1, RNF-7 · casos 1, 3, 5, 6, 10, 11, 12, 16, 17
       `deploy/deploy.sh`, `deploy/image-manifest.sh`, `deploy/smoke-test.sh`.
       Hecho cuando: `bash -n` pasa en los tres localmente, y en Actions (T7) cada caso imprime
       "OK caso N".
       Estimación: 30 min · depende de: T5
 
-- [ ] **T7. Workflow `docker.yml`.** RF-8, RF-9, RF-10, RNF-3–RNF-5 · casos 3, 9
+- [x] **T7. Workflow `docker.yml`.** RF-8, RF-9, RF-10, RNF-3–RNF-5 · casos 3, 9
       Jobs `image` (PR y `main`), `publish` (`main`, `packages: write`) y `deploy` (`main` o
       manual con sha, en fila, salteado con aviso sin secrets).
       Hecho cuando: en el PR, el job `image` termina en verde con los casos de T6 y la comparación

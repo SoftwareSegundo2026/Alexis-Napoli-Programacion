@@ -1,0 +1,38 @@
+Evidencia del job "image" del workflow Docker (spec 007, RNF-3)
+Corrida: https://github.com/SoftwareSegundo2026/Alexis-Napoli-Programacion/actions/runs/43915953632
+Evento: pull_request (rama tp-7-docker-cd, commit 5afb92a) · resultado: success (343 s)
+Extracto del log descargado de la corrida (los pasos completos están en la corrida).
+
+── Build A (con los 4 gates adentro) ──────────────────────────────────────────
+#18 [build 3/3] RUN pnpm lint && pnpm build && pnpm test && pnpm test:e2e
+#18 18.68  Test Files  47 passed (47)        ← pnpm test (unit)
+#18 35.93  Test Files  25 passed (25)        ← pnpm test:e2e
+#23 naming to docker.io/library/chinook-ci:a done
+
+── Comparar las dos imágenes (reproducibilidad, caso 3) ───────────────────────
+Entradas comparadas: 23456
+Id imagen A: sha256:2ad0ed62ec0d0bae72067647f52378b25d1ae91815eec2e1b717cd64253f8e78
+Id imagen B: sha256:bfc62c295cb694f80c9b5686c3f07e88e68dbf98ca87df3855242a038c97849d (informativo)
+OK caso 3: las dos imágenes tienen exactamente el mismo contenido
+
+── Tamaño ─────────────────────────────────────────────────────────────────────
+IMAGE          ID             DISK USAGE   CONTENT SIZE
+chinook-ci:a   2ad0ed62ec0d        514MB          103MB
+
+── Casos límite contra Docker real (deploy/smoke-test.sh) ─────────────────────
+OK caso 10: uid 1000 (no root); sin pnpm, npm, npx ni TypeScript
+OK caso 11: sin .env en la imagen; el secreto canario no está ni en docker history ni en los archivos
+OK caso 5: JWT_SECRET corto y LOG_LEVEL=loud: no arranca y el mensaje nombra la variable
+Desplegado: ghcr.io/softwaresegundo2026/alexis-napoli-programacion:ci-v1 — Up 2 seconds (healthy)
+OK caso 12: deploy.sh ci-v1 → healthy; /health 200; X-Request-Id y log JSON con requestId
+Desplegado: ghcr.io/softwaresegundo2026/alexis-napoli-programacion:ci-v2 — Up 2 seconds (healthy)
+Desplegado: ghcr.io/softwaresegundo2026/alexis-napoli-programacion:ci-v1 — Up 2 seconds (healthy)
+OK caso 12: deploy.sh ci-v2 y rollback a ci-v1: healthy con la versión pedida cada vez
+OK caso 6: tras reiniciar el daemon de Docker, el servicio volvió solo y quedó healthy (restart: always)
+OK caso 16: SIGTERM → apagado ordenado registrado y código de salida 0
+OK caso 1: con un archivo que no es una base, la app termina con error claro (fatal) y nunca queda healthy
+OK caso 17: deploy.sh falla (código 1) y muestra los logs del servicio
+Todos los casos pasaron.
+
+── Jobs publish y deploy ──────────────────────────────────────────────────────
+skipped: en un pull_request no se publica ni se despliega (RF-8, RNF-5).
