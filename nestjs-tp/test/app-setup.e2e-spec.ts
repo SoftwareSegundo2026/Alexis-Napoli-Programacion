@@ -38,4 +38,18 @@ describe('configureApp (e2e) — prefijo y contrato de errores', () => {
 
     expect(Object.keys(response.body as object)).toEqual(['detail']);
   });
+
+  it('JSON malformado SIN clave → 401: la clave se verifica primero (RF-11)', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/api/v1/no-existe')
+      .set('Content-Type', 'application/json')
+      .send('{"Name": ')
+      .expect(401);
+
+    expect(Object.keys(response.body as object)).toEqual(['detail']);
+  });
+
+  it('una lectura no necesita clave', async () => {
+    await request(app.getHttpServer()).get('/').expect(200);
+  });
 });

@@ -3,9 +3,9 @@
 Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al terminar **cada tarea**.
 
 ## Estado actual
-- Fase del flujo: `001-chinook-nest` (TP-1) → implementando. **T1 y T2 hechas**; siguiente: T3 (clave de escritura).
+- Fase del flujo: `001-chinook-nest` (TP-1) → implementando. **T1–T3 hechas**; siguiente: T4 (géneros).
 - Specs activas: `specs/001-chinook-nest/` (TP-1) · `specs/000-ejemplo-chinook/` (referencia del docente)
-- Tests: `pnpm test` 45 (9 archivos) y `pnpm test:e2e` 7 (3 archivos) en verde; lint y build en verde.
+- Tests: `pnpm test` 58 (10 archivos) y `pnpm test:e2e` 9 (3 archivos) en verde; lint y build en verde.
 
 ## Decisiones (y por qué)
 - 15/11 · Base `programacion/nestjs-music`; constitución del docente sin cambios; lint con
@@ -22,6 +22,10 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 - 16/11 · T2: `skip`/`limit` solo aceptan enteros escritos en limpio (`"1e2"`, `"1.5"`, `""` → 400).
 - 16/11 · T2: validación → un solo `detail` (primer error); 500 → "Internal Server Error" (el
   detalle va al log). Agregado `test/app-setup.e2e-spec.ts` (prefijo, 404 y JSON malformado).
+- 16/11 · T3 (cambio de plan aprobado por Alexis): clave de escritura como **middleware** global
+  registrado en `configureApp` (no guard), para que corra antes del body-parser → 401 antes que
+  400 también con JSON malformado. Plan (decisión 5) y tasks actualizados. Header `X-API-Key`,
+  comparación con `timingSafeEqual` sobre SHA-256; mensaje `Missing or invalid write key`.
 
 ## Aprendizajes y errores a evitar
 - `ConfigModule.forRoot({ validate })` valida al **importar** `app.module`, no en `init()`.
@@ -29,10 +33,10 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 - pnpm 12 bloquea scripts nativos: sin `allowBuilds` → `ERR_PNPM_IGNORED_BUILDS`.
 - TypeORM reintenta 9 veces (27 s) si la base falla: `retryAttempts: 0` para SQLite local.
 - El body-parser de Express corre **antes** que los guards: un JSON malformado da 400 aunque falte
-  la clave. Para respetar 401 → 400 (spec) la clave tiene que verificarse antes del parser (T3).
+  la clave. Lo registrado con `app.use()` antes de `init()` corre antes del parser (resuelto en T3).
 - En PowerShell, pnpm escribe en stderr aunque salga bien: mirar `$LASTEXITCODE`.
 - `test/app.e2e-spec.ts` (de la base) no pasa `prettier --check`; no se tocó.
 
 ## Próximos pasos
-- T3: clave de escritura (ver aprendizaje del body-parser; propuesta al usuario antes de hacerla).
+- T4: géneros CRUD completo (entidad, repository, service, controller, DTOs, 409 por pistas y nombre).
 - Pendiente de T6: el andamio `albums` tiene 2 warnings de lint (parámetros sin usar).

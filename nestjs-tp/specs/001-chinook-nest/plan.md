@@ -30,7 +30,7 @@ src/
 ├── common/
 │   ├── dto/pagination-query.dto.ts       ← skip/limit validados (RF-2, RF-10)
 │   ├── filters/detail-exception.filter.ts ← todo error → {"detail": ...} (contrato)
-│   ├── guards/write-key.guard.ts          ← clave de escritura global (RF-11)
+│   ├── middleware/write-key.middleware.ts ← clave de escritura global (RF-11) — ver decisión 5
 │   └── validation/                        ← helpers: trim, "no null en update", primer error → detail
 ├── genres/ artists/ albums/ tracks/
 │   ├── <recurso>.module.ts
@@ -59,7 +59,7 @@ prefijo, para no romper su test existente.
 | `src/database/database.module.ts` | Conexión, `synchronize: false`, copia del template si falta la base | RNF-4 |
 | `src/app.setup.ts` | Prefijo, `ValidationPipe({ whitelist, forbidNonWhitelisted, transform })`, filtro, Swagger | RF-9, RF-10, RF-14 |
 | `src/common/filters/detail-exception.filter.ts` | `{"detail"}` para todo error; JSON malformado → 400; error no previsto → 500 genérico | contrato, RF-10 |
-| `src/common/guards/write-key.guard.ts` | POST/PATCH/PUT/DELETE exigen `X-API-Key`; GET libre | RF-11 |
+| `src/common/middleware/write-key.middleware.ts` | POST/PATCH/PUT/DELETE exigen `X-API-Key`; GET libre | RF-11 |
 | `src/common/dto/pagination-query.dto.ts` | `skip` ≥ 0, 1 ≤ `limit` ≤ 100, defaults 0/100 | RF-2, RF-10 |
 | `*.controller.ts` | Rutas, `ParseIntPipe` en `{id}`, `@HttpCode(204)` en DELETE | RF-1, RF-3, RF-6…RF-8 |
 | `*.service.ts` | 404, 409 por referencias (RF-12) y por nombre repetido (RF-13), 400 por id relacionado inexistente | RF-3, RF-7…RF-9, RF-12, RF-13 |
@@ -80,13 +80,17 @@ prefijo, para no romper su test existente.
    del contrato original. Así la base y la API pueden cambiar por separado.
 4. **Repository propio por recurso** (patrón DAO). El service no conoce TypeORM y en
    los tests unitarios se reemplaza por un mock.
-5. **Clave de escritura como guard global** (principio 5: "protegido por defecto").
+5. **Clave de escritura como middleware global** (principio 5: "protegido por defecto").
    Si mañana alguien agrega un POST y se olvida de protegerlo, queda protegido igual.
    Comparación en tiempo constante (`timingSafeEqual`) para no filtrar la clave por
    tiempos de respuesta. En el TP-2 se reemplaza por el login con JWT.
-6. **El orden 401 → 400 → 404 → 409 sale del ciclo de vida de Nest**: los guards corren
-   antes que los pipes (validación) y estos antes que el service (404/409). No hace
-   falta código extra para respetar la prioridad de la spec.
+   *Cambio aprobado el 16/11 (Alexis Napoli), durante T2:* el plan original decía
+   "guard global", pero el lector del cuerpo de Express corre **antes** que los guards,
+   así que un JSON malformado sin clave daba 400 en vez de 401 (la spec pide 401). Un
+   middleware registrado en `configureApp` antes del lector del cuerpo lo resuelve.
+6. **El orden 401 → 400 → 404 → 409 sale del ciclo de la petición**: el middleware de la
+   clave corre antes que el lector del cuerpo y que los pipes (validación), y estos antes
+   que el service (404/409). No hace falta código extra para respetar la prioridad.
 7. **Validación**: el primer error se devuelve como `detail` nombrando el campo. Los
    textos se recortan (trim) antes de validar, así "solo espacios" falla como vacío. En
    los DTOs de modificación, los campos obligatorios usan "validar si viene" en lugar de
@@ -105,7 +109,7 @@ prefijo, para no romper su test existente.
 | Tanda | Tipo | Qué cubre |
 |---|---|---|
 | A | unit — services con repository mockeado | RF-3, RF-7, RF-8, RF-9 (ids relacionados), RF-12, RF-13 |
-| B | unit — piezas comunes (guard, filtro, paginación, validación de entorno) | RF-10, RF-11, RNF-3, formato `{"detail"}` |
+| B | unit — piezas comunes (middleware de la clave, filtro, paginación, validación de entorno) | RF-10, RF-11, RNF-3, formato `{"detail"}` |
 | C | unit — repositories con el `Repository` de TypeORM mockeado | RNF-1 (paginado en la base: `skip`/`take`) |
 | D | e2e por recurso sobre copia temporal de la base | RF-1…RF-10, RF-12, RF-13, RNF-2 (claves exactas del JSON) |
 | E | e2e de seguridad | RF-11 en las 12 rutas de escritura, prioridad 401 → 400, RNF-4 (template intacto) |

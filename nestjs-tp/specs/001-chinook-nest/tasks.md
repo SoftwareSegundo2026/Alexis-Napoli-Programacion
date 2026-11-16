@@ -24,10 +24,12 @@ Reglas: una tarea por vez, tests primero (en rojo), gates
       (`limit` 0/101/abc y `skip` -1 → error; defaults 0/100).
       Estimación: 30 min · depende de: T1
 
-- [ ] **T3. Clave de escritura global.** RF-11
-      Guard global que exige `X-API-Key` en POST/PATCH/PUT/DELETE, comparación en tiempo constante.
-      Hecho cuando: `pnpm test` pasa los tests del guard (sin clave, vacía o incorrecta → 401;
-      GET sin clave pasa; clave correcta pasa).
+- [x] **T3. Clave de escritura global.** RF-11
+      Middleware global (antes del lector del cuerpo; ver decisión 5 del plan, cambio del 16/11)
+      que exige `X-API-Key` en POST/PATCH/PUT/DELETE, comparación en tiempo constante.
+      Hecho cuando: `pnpm test` pasa los tests del middleware (sin clave, vacía o incorrecta → 401;
+      GET sin clave pasa; clave correcta pasa) y `pnpm test:e2e` comprueba que un JSON
+      malformado sin clave responde 401.
       Estimación: 20 min · depende de: T2
 
 - [ ] **T4. Géneros: CRUD completo.** RF-1, RF-2, RF-3, RF-6, RF-7, RF-8, RF-9, RF-10, RF-12, RF-13
