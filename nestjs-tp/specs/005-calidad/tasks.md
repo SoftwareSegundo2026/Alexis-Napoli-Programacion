@@ -20,7 +20,7 @@ sin `[x]`) y `005-Tn` (el arreglo, sin tocar esos tests; con `[x]`) — RNF-4.
       mutación sale con código ≠ 0.
       Estimación: 15 min · depende de: —
 
-- [ ] **T2. Contrato: infraestructura y catálogo.** RF-3, RF-5 (parcial RF-4)
+- [x] **T2. Contrato: infraestructura y catálogo.** RF-3, RF-5 (parcial RF-4)
       `test/contract/shapes.ts` (formas de artista, género, álbum, pista, error y el
       verificador de claves exactas y tipos), `catalog.cases.ts` (las 20 operaciones del
       catálogo: éxito y cada código documentado) y `contract.e2e-spec.ts` (un `it.each` con
