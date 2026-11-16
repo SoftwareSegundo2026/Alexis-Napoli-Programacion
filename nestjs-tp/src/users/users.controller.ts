@@ -13,10 +13,11 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto.js';
 import {
+  ApiAuthenticated,
   ApiConflict,
   ApiInvalidRequest,
   ApiNotFound,
-  ApiWriteOperation,
+  ApiAdminOnly,
 } from '../common/swagger/api-docs.decorators.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { UpdateUserDto } from './dto/update-user.dto.js';
@@ -35,6 +36,7 @@ export class UsersController {
 
   /** Declarada antes que cualquier ruta con `:id`, para que "me" no se tome como id. */
   @Get('me')
+  @ApiAuthenticated()
   @ApiOkResponse({ type: UserResponseDto })
   me(@CurrentUser() user: User): UserResponseDto {
     return UserResponseDto.fromEntity(user);
@@ -42,6 +44,7 @@ export class UsersController {
 
   @Get()
   @Roles('admin')
+  @ApiAdminOnly()
   @ApiOkResponse({ type: [UserResponseDto] })
   @ApiInvalidRequest()
   async findAll(
@@ -53,7 +56,7 @@ export class UsersController {
 
   @Post()
   @Roles('admin')
-  @ApiWriteOperation()
+  @ApiAdminOnly()
   @ApiCreatedResponse({ type: UserResponseDto })
   @ApiInvalidRequest()
   @ApiConflict('El username o el email ya están registrados')
@@ -63,7 +66,7 @@ export class UsersController {
 
   @Patch(':id')
   @Roles('admin')
-  @ApiWriteOperation()
+  @ApiAdminOnly()
   @ApiOkResponse({ type: UserResponseDto })
   @ApiInvalidRequest()
   @ApiNotFound()

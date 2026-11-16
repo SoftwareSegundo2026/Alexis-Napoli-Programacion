@@ -1,26 +1,40 @@
 import { applyDecorators } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiConflictResponse,
+  ApiForbiddenResponse,
   ApiNotFoundResponse,
-  ApiSecurity,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { ErrorResponseDto } from '../dto/error-response.dto.js';
 
-/** Nombre del esquema de seguridad de la clave de escritura (ver `app.setup.ts`). */
-export const WRITE_KEY_SCHEME = 'write-key';
+/** Nombre del esquema de credencial en la documentación (ver `app.setup.ts`). */
+export const BEARER_SCHEME = 'bearer';
 
 /**
- * Documenta una operación de escritura: exige `X-API-Key` y puede responder 401.
- * Solo documenta: la protección real la hace el middleware global (RF-11).
+ * Documenta una operación que exige credencial (spec 002 RF-13): declara el
+ * esquema Bearer y el 401. Solo documenta: la protección real la hacen los
+ * guards globales.
  */
-export function ApiWriteOperation(): MethodDecorator {
+export function ApiAuthenticated(): MethodDecorator {
   return applyDecorators(
-    ApiSecurity(WRITE_KEY_SCHEME),
+    ApiBearerAuth(BEARER_SCHEME),
     ApiUnauthorizedResponse({
       type: ErrorResponseDto,
-      description: 'Falta la clave de escritura o es incorrecta',
+      description:
+        'Falta la credencial, es inválida o venció, o el usuario está deshabilitado',
+    }),
+  );
+}
+
+/** Operación que además exige rol admin: suma el 403. */
+export function ApiAdminOnly(): MethodDecorator {
+  return applyDecorators(
+    ApiAuthenticated(),
+    ApiForbiddenResponse({
+      type: ErrorResponseDto,
+      description: 'El usuario no tiene rol admin',
     }),
   );
 }

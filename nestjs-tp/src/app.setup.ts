@@ -6,7 +6,7 @@ import {
   deferJsonSyntaxError,
 } from './auth/interceptors/body-parse-error.interceptor.js';
 import { DetailExceptionFilter } from './common/filters/detail-exception.filter.js';
-import { WRITE_KEY_SCHEME } from './common/swagger/api-docs.decorators.js';
+import { BEARER_SCHEME } from './common/swagger/api-docs.decorators.js';
 import { RequestValidationPipe } from './common/validation/request-validation.pipe.js';
 
 export const API_PREFIX = 'api/v1';
@@ -41,26 +41,27 @@ export function configureApp<T extends NestExpressApplication>(app: T): T {
 }
 
 /**
- * Documentación interactiva generada desde las rutas reales (RF-14):
- * Swagger UI en `/docs` y el documento OpenAPI en `/docs-json`.
- * (El esquema de credencial Bearer se documenta en la tarea 002-T8.)
+ * Documentación interactiva generada desde las rutas reales (spec 001 RF-14,
+ * spec 002 RF-13): Swagger UI en `/docs` y el documento OpenAPI en `/docs-json`.
  */
 function setupDocs(app: INestApplication): void {
   const config = new DocumentBuilder()
     .setTitle('Catálogo Chinook')
     .setDescription(
-      'Artistas, álbumes, géneros y pistas. Las lecturas son libres; las ' +
-        'altas, modificaciones y bajas exigen una credencial de administrador.',
+      'Artistas, álbumes, géneros y pistas. Las lecturas del catálogo son ' +
+        'libres. Para lo demás: obtené una credencial con POST /api/v1/auth/token ' +
+        'y enviala como "Authorization: Bearer <credencial>" (botón Authorize). ' +
+        'Altas, modificaciones y bajas, y la administración de usuarios, exigen rol admin.',
     )
     .setVersion('1.0')
-    .addApiKey(
+    .addBearerAuth(
       {
-        type: 'apiKey',
-        in: 'header',
-        name: 'X-API-Key',
-        description: 'Se reemplaza por la credencial Bearer (002-T8)',
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'Credencial devuelta por POST /api/v1/auth/token',
       },
-      WRITE_KEY_SCHEME,
+      BEARER_SCHEME,
     )
     .build();
 

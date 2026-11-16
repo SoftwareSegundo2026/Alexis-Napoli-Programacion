@@ -24,7 +24,7 @@ import {
   ApiConflict,
   ApiInvalidRequest,
   ApiNotFound,
-  ApiWriteOperation,
+  ApiAdminOnly,
 } from '../common/swagger/api-docs.decorators.js';
 import { ArtistsService } from './artists.service.js';
 import { ArtistResponseDto } from './dto/artist-response.dto.js';
@@ -61,7 +61,7 @@ export class ArtistsController {
 
   @Post()
   @Roles('admin')
-  @ApiWriteOperation()
+  @ApiAdminOnly()
   @ApiCreatedResponse({ type: ArtistResponseDto })
   @ApiInvalidRequest()
   @ApiConflict('Ya existe un artista con ese nombre')
@@ -71,7 +71,7 @@ export class ArtistsController {
 
   @Patch(':id')
   @Roles('admin')
-  @ApiWriteOperation()
+  @ApiAdminOnly()
   @ApiOkResponse({ type: ArtistResponseDto })
   @ApiInvalidRequest()
   @ApiNotFound()
@@ -88,7 +88,7 @@ export class ArtistsController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @Roles('admin')
-  @ApiWriteOperation()
+  @ApiAdminOnly()
   @ApiNoContentResponse({ description: 'Eliminado' })
   @ApiInvalidRequest()
   @ApiNotFound()

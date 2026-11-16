@@ -24,7 +24,7 @@ import {
   ApiConflict,
   ApiInvalidRequest,
   ApiNotFound,
-  ApiWriteOperation,
+  ApiAdminOnly,
 } from '../common/swagger/api-docs.decorators.js';
 import { AlbumsService } from './albums.service.js';
 import { AlbumResponseDto } from './dto/album-response.dto.js';
@@ -61,7 +61,7 @@ export class AlbumsController {
 
   @Post()
   @Roles('admin')
-  @ApiWriteOperation()
+  @ApiAdminOnly()
   @ApiCreatedResponse({ type: AlbumResponseDto })
   @ApiInvalidRequest()
   async create(@Body() dto: CreateAlbumDto): Promise<AlbumResponseDto> {
@@ -70,7 +70,7 @@ export class AlbumsController {
 
   @Patch(':id')
   @Roles('admin')
-  @ApiWriteOperation()
+  @ApiAdminOnly()
   @ApiOkResponse({ type: AlbumResponseDto })
   @ApiInvalidRequest()
   @ApiNotFound()
@@ -86,7 +86,7 @@ export class AlbumsController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @Roles('admin')
-  @ApiWriteOperation()
+  @ApiAdminOnly()
   @ApiNoContentResponse({ description: 'Eliminado' })
   @ApiInvalidRequest()
   @ApiNotFound()

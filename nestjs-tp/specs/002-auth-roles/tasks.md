@@ -60,7 +60,7 @@ Reglas: una tarea por vez, tests primero (en rojo), gates
       en la siguiente escritura".
       Estimación: 25 min · depende de: T6
 
-- [ ] **T8. Documentación con Bearer.** RF-13
+- [x] **T8. Documentación con Bearer.** RF-13
       Esquema `Bearer` en Swagger, marcado en lo protegido, login y usuarios documentados.
       Hecho cuando: `pnpm test:e2e` pasa `docs.e2e-spec.ts` migrado (25 operaciones; las
       protegidas declaran `Bearer` y las públicas no; esquema `UserResponseDto` sin hash).

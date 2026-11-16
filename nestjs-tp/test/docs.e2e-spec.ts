@@ -72,23 +72,75 @@ describe('Documentación interactiva (e2e) — RF-14', () => {
     expect(login?.security ?? []).toEqual([]);
   });
 
-  it('declara la clave de escritura como header X-API-Key', () => {
+  // Spec 002 RF-13 (reemplaza la parte de la RF-14 de la spec 001 que
+  // declaraba la clave X-API-Key).
+  it('declara la credencial Bearer y ya no la clave X-API-Key (RF-13, RF-12)', () => {
     const schemes = Object.values(document.components?.securitySchemes ?? {});
 
     expect(schemes).toContainEqual(
-      expect.objectContaining({
-        type: 'apiKey',
-        in: 'header',
-        name: 'X-API-Key',
-      }),
+      expect.objectContaining({ type: 'http', scheme: 'bearer' }),
+    );
+    expect(schemes).not.toContainEqual(
+      expect.objectContaining({ name: 'X-API-Key' }),
     );
   });
 
-  it('en el catálogo las escrituras exigen la clave y las lecturas no', () => {
+  it('en el catálogo las escrituras exigen Bearer y las lecturas no', () => {
     for (const { method, operation } of apiOperations()) {
-      const requiresKey = (operation.security ?? []).length > 0;
-      expect(requiresKey).toBe(WRITE_METHODS.includes(method));
+      const requiresBearer = (operation.security ?? []).some(
+        (requirement) => 'bearer' in requirement,
+      );
+      expect(requiresBearer).toBe(WRITE_METHODS.includes(method));
     }
+  });
+
+  it('documenta las 4 operaciones de usuarios, todas con Bearer (RF-13)', () => {
+    const operations = [
+      document.paths['/api/v1/users']?.get,
+      document.paths['/api/v1/users']?.post,
+      document.paths['/api/v1/users/me']?.get,
+      document.paths['/api/v1/users/{id}']?.patch,
+    ];
+
+    for (const operation of operations) {
+      expect(operation).toBeDefined();
+      expect(operation?.security).toEqual([{ bearer: [] }]);
+    }
+  });
+
+  it('en total la API son 25 operaciones: 20 del catálogo, el login y 4 de usuarios', () => {
+    const all = Object.entries(document.paths)
+      .filter(([path]) => path.startsWith('/api/v1/'))
+      .flatMap(([, item]) =>
+        (['get', 'post', 'patch', 'delete', 'put'] as Method[]).filter(
+          (method) => item[method] !== undefined,
+        ),
+      );
+
+    expect(all).toHaveLength(25);
+  });
+
+  it('el esquema de usuario no expone la contraseña ni el hash (RNF-1)', () => {
+    const schemas = document.components?.schemas ?? {};
+    const userFields = Object.keys(
+      (schemas.UserResponseDto as { properties?: object } | undefined)
+        ?.properties ?? {},
+    ).sort();
+
+    expect(userFields).toEqual([
+      'disabled',
+      'email',
+      'full_name',
+      'is_admin',
+      'user_id',
+      'username',
+    ]);
+    expect(
+      Object.keys(
+        (schemas.TokenResponseDto as { properties?: object } | undefined)
+          ?.properties ?? {},
+      ).sort(),
+    ).toEqual(['access_token', 'token_type']);
   });
 
   it('los listados documentan skip y limit', () => {

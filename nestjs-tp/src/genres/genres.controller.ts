@@ -24,7 +24,7 @@ import {
   ApiConflict,
   ApiInvalidRequest,
   ApiNotFound,
-  ApiWriteOperation,
+  ApiAdminOnly,
 } from '../common/swagger/api-docs.decorators.js';
 import { CreateGenreDto } from './dto/create-genre.dto.js';
 import { GenreResponseDto } from './dto/genre-response.dto.js';
@@ -61,7 +61,7 @@ export class GenresController {
 
   @Post()
   @Roles('admin')
-  @ApiWriteOperation()
+  @ApiAdminOnly()
   @ApiCreatedResponse({ type: GenreResponseDto })
   @ApiInvalidRequest()
   @ApiConflict('Ya existe un género con ese nombre')
@@ -71,7 +71,7 @@ export class GenresController {
 
   @Patch(':id')
   @Roles('admin')
-  @ApiWriteOperation()
+  @ApiAdminOnly()
   @ApiOkResponse({ type: GenreResponseDto })
   @ApiInvalidRequest()
   @ApiNotFound()
@@ -88,7 +88,7 @@ export class GenresController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @Roles('admin')
-  @ApiWriteOperation()
+  @ApiAdminOnly()
   @ApiNoContentResponse({ description: 'Eliminado' })
   @ApiInvalidRequest()
   @ApiNotFound()

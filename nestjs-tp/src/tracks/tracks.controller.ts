@@ -24,7 +24,7 @@ import {
   ApiConflict,
   ApiInvalidRequest,
   ApiNotFound,
-  ApiWriteOperation,
+  ApiAdminOnly,
 } from '../common/swagger/api-docs.decorators.js';
 import { CreateTrackDto } from './dto/create-track.dto.js';
 import { TrackResponseDto } from './dto/track-response.dto.js';
@@ -61,7 +61,7 @@ export class TracksController {
 
   @Post()
   @Roles('admin')
-  @ApiWriteOperation()
+  @ApiAdminOnly()
   @ApiCreatedResponse({ type: TrackResponseDto })
   @ApiInvalidRequest()
   async create(@Body() dto: CreateTrackDto): Promise<TrackResponseDto> {
@@ -70,7 +70,7 @@ export class TracksController {
 
   @Patch(':id')
   @Roles('admin')
-  @ApiWriteOperation()
+  @ApiAdminOnly()
   @ApiOkResponse({ type: TrackResponseDto })
   @ApiInvalidRequest()
   @ApiNotFound()
@@ -86,7 +86,7 @@ export class TracksController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @Roles('admin')
-  @ApiWriteOperation()
+  @ApiAdminOnly()
   @ApiNoContentResponse({ description: 'Eliminada' })
   @ApiInvalidRequest()
   @ApiNotFound()
