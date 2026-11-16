@@ -47,7 +47,7 @@ Reglas: una tarea por vez, tests primero (en rojo), gates en verde (`lint`, `bui
       Hecho cuando: `pnpm test:e2e` pasa los casos y el cupo vuelve una sola vez tras dos cancelaciones.
       Estimación: 30 min · depende de: T4
 
-- [ ] **T7. Modificaciones simultáneas del catálogo.** RF-15 · caso 27
+- [x] **T7. Modificaciones simultáneas del catálogo.** RF-15 · caso 27
       Hecho cuando: dos `PATCH` simultáneos al mismo artista → 200 y 200, y el `GET` final coincide
       entero con uno de los dos.
       Estimación: 10 min · depende de: —
