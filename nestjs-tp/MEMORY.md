@@ -8,10 +8,14 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 - TP-5 (`005-calidad`) **en curso**: spec, clarify, plan y tareas aprobados; **cerrado**: T1–T7 y `validate.md` → APROBADO (pusheado).
 - TP-6 (`006-ci`) **en curso**: spec, clarify, plan y tareas aprobados; **cerrado**: validate APROBADO, PR #2 mergeado (`d452504`).
 - TP-3 (`003-busqueda`) **cerrado**: validate APROBADO; PR #3 mergeado (`dd511e1`), gates verde.
-- TP-4 (`004-reservas`) **en curso** en la rama `tp-4-reservas`: spec y clarify aprobados
-  (27 casos límite; RF-14 artista con conciertos → 409; RF-15 = pendiente de concurrencia del TP-1).
-  Plan y tareas aprobados (7 tareas + T8 agregada por la validación); T1–T8 cerradas.
-  `validate.md` → APROBADO. Siguiente: push → PR → merge del usuario.
+- TP-4 (`004-reservas`) **cerrado**: validate APROBADO; PR #4 mergeado (`c449730`), gates verde
+  en main (27 casos límite; RF-14 artista con conciertos → 409; RF-15 = pendiente del TP-1; T8
+  agregada por la validación: ids como parámetros).
+- TP-7 (`007-docker-cd`) **en curso** en la rama `tp-7-docker-cd`: spec y clarify aprobados
+  (17 RF, 7 RNF, 17 casos). Decisiones: SQLite en volumen (un servicio `api`, adaptación
+  declarada), sin servidor (deploy SSH solo con secrets; `deploy.sh` probado en Actions con el
+  runner como servidor), GHCR, logger JSON propio + `requestId` (AsyncLocalStorage). Sin Docker
+  local: toda la evidencia de imagen/compose sale de un workflow de Actions.
 - 16/11 · 004 plan: TypeORM 1.1.3 con better-sqlite3 usa UNA conexión (`queryRunner ??=`) y una
   transacción abierta dentro de otra es un SAVEPOINT → `TransactionLock` (FIFO) para reservas.
 - 16/11 · 004-T1: `migrations.ts` (Concert/Reservation/Payment, `IF NOT EXISTS`, índice único
