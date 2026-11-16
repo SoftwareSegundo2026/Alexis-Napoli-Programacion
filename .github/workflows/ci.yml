@@ -1,0 +1,105 @@
+# CI del TP NestJS (spec nestjs-tp/specs/006-ci/spec.md).
+#
+# Convierte los gates de la constitución (lint · build · test · test:e2e) y los del
+# TP-5 (cobertura y tipos) en una condición de merge: la rama `main` exige que el job
+# `gates` termine en verde. Este archivo vive en la RAÍZ del repo porque GitHub solo
+# lee `.github/workflows/` desde ahí; todo se ejecuta dentro de `nestjs-tp/`.
+name: CI
+
+on:
+  # Cada PR hacia main (al abrirlo, reabrirlo o subir commits nuevos) — RF-1.
+  # SIN filtro "paths:": un check requerido que no corre deja el PR trabado en
+  # "Expected — waiting" (RF-8). Por eso corre aunque el PR solo toque documentación.
+  pull_request:
+    branches: [main]
+  # Cada push a main (incluido el merge de un PR) — RF-2.
+  push:
+    branches: [main]
+
+# Permisos mínimos del token de la corrida: solo leer el código (RNF-1).
+# Se usa `pull_request` y NO `pull_request_target`: así un PR desde un fork corre
+# sin secretos y sin poder escribir en el repo (caso 7).
+permissions:
+  contents: read
+
+# Si llega un push nuevo a la misma rama, se cancela la corrida anterior que
+# siga en curso: su resultado ya no importa (RNF-6).
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Job único con los gates en secuencia. Su nombre ("gates") es el nombre del
+  # check que la regla de `main` exige: si se renombra, hay que actualizar la regla
+  # o todo PR queda esperando un check que ya no existe (RF-5).
+  gates:
+    name: gates
+    runs-on: ubuntu-latest
+    # Tiempo máximo: si un test se cuelga, la corrida falla a los 15 minutos (RNF-6).
+    timeout-minutes: 15
+    defaults:
+      run:
+        # Todos los comandos corren en la carpeta del proyecto NestJS (RNF-4).
+        working-directory: nestjs-tp
+
+    steps:
+      # Baja el código de la corrida (el del PR o el del push).
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      # Instala pnpm en la versión de "packageManager" de nestjs-tp/package.json:
+      # la misma que en la máquina local (RNF-7).
+      - name: Instalar pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          package_json_file: nestjs-tp/package.json
+
+      # Node 24 (el local) y cache del store de pnpm. La clave de la cache sale
+      # del lockfile: si no cambió, la instalación reutiliza lo descargado (RF-6).
+      - name: Instalar Node 24 con cache de pnpm
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: nestjs-tp/pnpm-lock.yaml
+
+      # Instala exactamente lo que dice el lockfile, sin modificarlo: si
+      # package.json y el lockfile no coinciden, falla acá (caso 6).
+      - name: Instalar dependencias (lockfile congelado)
+        run: pnpm install --frozen-lockfile
+
+      # Gate 1 — estilo y reglas del código (sin `any`, sin @ts-ignore…).
+      - name: Lint
+        run: pnpm lint
+
+      # Gate 2 — que la aplicación compile.
+      - name: Build
+        run: pnpm build
+
+      # Gate 3 — tests unitarios.
+      - name: Unit tests
+        run: pnpm test
+
+      # Gate 4 — tests e2e: la API completa sobre una copia temporal de la base,
+      # incluido el contrato de las operaciones documentadas (TP-5).
+      - name: E2E tests
+        run: pnpm test:e2e
+
+      # Gate del TP-5 — cobertura de líneas y ramas ≥ 75% sobre todo src/.
+      - name: Cobertura (umbral 75/75)
+        id: coverage
+        run: pnpm test:cov
+
+      # Chequeo de tipos de src/ y test/ (build no mira test/ y Vitest no chequea tipos).
+      - name: Typecheck
+        run: pnpm typecheck
+
+      # Publica el reporte de cobertura si ese paso llegó a correr, en verde o en
+      # rojo. Si el pipeline falló antes, no hay reporte y no es un error (RF-7).
+      - name: Publicar reporte de cobertura
+        if: ${{ !cancelled() && steps.coverage.outcome != 'skipped' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura
+          path: nestjs-tp/coverage/
+          if-no-files-found: error
