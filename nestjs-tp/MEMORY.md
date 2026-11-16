@@ -6,7 +6,8 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 - TP-1 (`001-chinook-nest`) **cerrado, validado y pusheado** (`91124e0`).
 - TP-2 (`002-auth-roles`) **cerrado**: T1–T9 y `validate.md` → APROBADO.
 - TP-5 (`005-calidad`) **en curso**: spec, clarify, plan y tareas aprobados; **cerrado**: T1–T7 y `validate.md` → APROBADO (pusheado).
-- TP-6 (`006-ci`) **en curso**: spec, clarify, plan y tareas aprobados; T1–T3 cerradas. Siguiente: T4 (rama `tp-6-ci`).
+- TP-6 (`006-ci`) **en curso**: spec, clarify, plan y tareas aprobados; T1–T4 y `validate.md` → APROBADO; entra a `main`
+  por el PR #2 (lo mergea el usuario). Siguiente: TP-3 (búsqueda), en su propia rama.
 - Tests: `pnpm test` 279 (31 archivos) y `pnpm test:e2e` 380 (17 archivos) en verde; lint sin avisos;
   `pnpm exec tsc --noEmit -p tsconfig.json` también limpio (chequea los tipos de `test/`).
 - Cobertura (unit, todo `src/`): líneas 76,52% (476/622, **146 sin cubrir**) · ramas 80,4%
@@ -119,6 +120,9 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   merge deshabilitado siendo admin; PR cerrado sin mergear. La UI nueva ya no escribe "Merging is
   blocked" (botón gris = bloqueo). La API sin token da `mergeable_state: unstable` (no evalúa la
   regla): NO usarla como prueba. Capturas: `docs/evidencias/006-*.png`.
+- 16/11 · 006-T4: sección "Integración continua (TP-6)" en `nestjs-tp/README.md` (pasos, cómo leer
+  un fallo, protección, evidencia). PR #2 (solo docs) → corrida 43892800709 verde (caso 2).
+  Búsqueda de secretos (validate): único `.env*` = `.env.example` vacío; 0 tokens en el historial.
 - **`main` está protegida: TODO entra por RAMA + PR que mergea el usuario** (spec 006 RF-9).
 
 ## Decisiones del plan 002 a recordar en las próximas tareas

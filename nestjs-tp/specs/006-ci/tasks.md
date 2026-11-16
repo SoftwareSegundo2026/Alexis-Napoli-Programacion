@@ -34,7 +34,7 @@ T1–T2 van a `main` (antes de la regla); T3–T4 y el cierre, por rama + PR (RF
       `nestjs-tp/docs/evidencias/` (link del PR en `MEMORY.md`).
       Estimación: 20 min (+ tiempo del usuario) · depende de: T2
 
-- [ ] **T4. Documentación por rama + PR.** RF-8, RNF-3 · caso 2
+- [x] **T4. Documentación por rama + PR.** RF-8, RNF-3 · caso 2
       Rama `tp-6-ci`: sección "Integración continua" en `nestjs-tp/README.md` (qué corre,
       cuándo, cómo leer un fallo, link y captura del PR rojo). PR que el usuario mergea.
       Hecho cuando: el PR (solo documentación) corre `gates` completo en verde y el usuario
