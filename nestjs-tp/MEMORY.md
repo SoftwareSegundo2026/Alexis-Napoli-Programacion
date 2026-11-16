@@ -70,6 +70,11 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   web; extracto en `docs/evidencias/007-docker-image-pr.txt`: casos 1, 3 (23.456 entradas
   idénticas; ids distintos, informativo), 5, 6, 10, 11, 12 (deploy + rollback), 16, 17; dentro del
   build 47 archivos unit + 25 e2e. Imagen 103 MB de contenido.
+- 16/11 · 007-T8: README, sección TP-7 (un comando en máquina limpia, variables, imagen, jobs del
+  pipeline con link a la evidencia, preparar el servidor con los 4 secrets, rollback desde
+  Actions o con `deploy.sh <sha>` en el servidor, "¿qué pasó a las 3 AM?" con
+  `docker compose logs --since/--until | jq` por nivel y por requestId). `.env.example`: API_PORT y
+  qué fija el compose. T1–T8 COMPLETAS. Gates 483 unit, 514 e2e, cov 82,46% / 86,25%.
 - 16/11 · 004 plan: TypeORM 1.1.3 con better-sqlite3 usa UNA conexión (`queryRunner ??=`) y una
   transacción abierta dentro de otra es un SAVEPOINT → `TransactionLock` (FIFO) para reservas.
 - 16/11 · 004-T1: `migrations.ts` (Concert/Reservation/Payment, `IF NOT EXISTS`, índice único

@@ -60,7 +60,7 @@ pushear la rama `tp-7-docker-cd` (nunca `main`) durante T5–T8.
       el merge.
       Estimación: 30 min (+ iteraciones en Actions) · depende de: T6
 
-- [ ] **T8. README de operación.** Criterios de evaluación de la consigna
+- [x] **T8. README de operación.** Criterios de evaluación de la consigna
       Levantar en una máquina limpia (`docker compose up -d`), variables, preparar el servidor
       (RF-17, secrets), despliegue, rollback, y cómo responder "¿qué pasó a las 3 AM?" con
       `docker compose logs` y el `requestId`.
