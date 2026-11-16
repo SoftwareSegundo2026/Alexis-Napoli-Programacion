@@ -3,9 +3,9 @@
 Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al terminar **cada tarea**.
 
 ## Estado actual
-- Fase del flujo: `001-chinook-nest` (TP-1) **cerrado**: T1–T9 hechas y `validate.md` → APROBADO.
-  Siguiente: TP-2 (`002-*`).
-- Specs activas: `specs/001-chinook-nest/` (TP-1) · `specs/000-ejemplo-chinook/` (referencia del docente)
+- Fase del flujo: TP-1 (`001`) **cerrado y pusheado**. TP-2: spec y clarify **aprobadas**
+  (ronda 2); siguiente: `plan.md`.
+- Specs activas: `002-auth-roles` (TP-2) · `001-chinook-nest` (TP-1) · `000-ejemplo-chinook` (docente)
 - Tests: `pnpm test` 151 (21 archivos) y `pnpm test:e2e` 168 (9 archivos) en verde; lint sin avisos; build verde.
 
 ## Decisiones (y por qué)
