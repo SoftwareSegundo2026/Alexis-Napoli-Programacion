@@ -4,8 +4,8 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 
 ## Estado actual
 - TP-1 (`001-chinook-nest`) **cerrado, validado y pusheado** (`91124e0`).
-- TP-2 (`002-auth-roles`): spec, clarify, plan y tareas aprobados. **T1 hecha**; siguiente: T2.
-- Tests: `pnpm test` 168 (21 archivos) y `pnpm test:e2e` 168 (9 archivos) en verde; lint sin avisos.
+- TP-2 (`002-auth-roles`): spec, clarify, plan y tareas aprobados. **T1–T2 hechas**; siguiente: T3.
+- Tests: `pnpm test` 183 (23 archivos) y `pnpm test:e2e` 168 (9 archivos) en verde; lint sin avisos.
 
 ## Decisiones (y por qué)
 - 15/11 · Base `programacion/nestjs-music`; constitución del docente sin cambios; lint con
@@ -23,6 +23,10 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 - 16/11 · 002-T1: `JWT_SECRET` obligatorio (≥ 32), `JWT_EXPIRES_MINUTES` (30), `PASSWORD_HASH_ROUNDS`
   (12; 4 en los e2e). Los 6 casos previos de `env.validation.spec` se conservaron (con secreto).
   Secreto de prueba en `test/helpers/test-env.ts`: no es real (RNF-3).
+- 16/11 · 002-T2: `PasswordHasher` en `users/` (no en `auth/`: evita dependencia circular);
+  `UsersModule` exporta repository y hasher. `bcryptjs` lee los `$2b$` de Python (verificado).
+  `UsersRepository` se testea contra una copia REAL de la base (SQL propio: `LOWER(TRIM())`,
+  `select: false`, índice único → `DuplicateUserError`).
 
 ## Decisiones del plan 002 a recordar en las próximas tareas
 - Guards globales (`APP_GUARD`, autenticación → roles); lo público con `@Public()`.
@@ -41,7 +45,9 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 - En PowerShell, pnpm y git escriben en stderr aunque salgan bien: mirar `$LASTEXITCODE`.
 - Prettier solo sobre archivos propios (sobre `src/` entero reescribe los de la base).
 - Si un e2e falla al levantar la app, su base temporal puede quedar en `%TEMP%`: inofensivo.
+- Target ES2023: los campos de clase EXISTEN aunque valgan `undefined` → para "no viaja el hash"
+  comprobar el valor y `JSON.stringify`, no `toHaveProperty`.
 
 ## Próximos pasos
-- 002-T2: entidad `User`, `UsersRepository`, `PasswordHasher` (bcryptjs).
+- 002-T3: `AuthService` (login, emitir y verificar credencial), guards y decoradores (sin registrar).
 - Pendiente para el TP-4: test de modificaciones concurrentes (observación de `001/validate.md`).

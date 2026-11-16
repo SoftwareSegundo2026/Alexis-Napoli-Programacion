@@ -14,7 +14,7 @@ Reglas: una tarea por vez, tests primero (en rojo), gates
       solo espacios → error claro; defaults 30 y 12; valores inválidos → error).
       Estimación: 20 min · depende de: —
 
-- [ ] **T2. Persistencia de usuarios y hash.** RF-9 (parcial), RNF-1
+- [x] **T2. Persistencia de usuarios y hash.** RF-9 (parcial), RNF-1
       Entidad `User` (tabla existente, `HashedPassword` con `select: false`), `UsersRepository`
       (página por id, búsqueda sin mayúsculas/espacios, existencia de username/email, alta con
       traducción del índice único) y `PasswordHasher` (hash, verificar, verificar contra el

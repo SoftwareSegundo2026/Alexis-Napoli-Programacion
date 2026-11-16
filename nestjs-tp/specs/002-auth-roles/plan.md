@@ -19,7 +19,6 @@ src/
 │   ├── auth.module.ts               ← JwtModule + registra los guards GLOBALES (APP_GUARD)
 │   ├── auth.controller.ts           ← POST /auth/token (@Public)
 │   ├── auth.service.ts              ← login (con verificación ficticia, RNF-4), emitir y verificar credencial
-│   ├── password-hasher.ts           ← hash / verificar / verificar contra hash de referencia
 │   ├── guards/authentication.guard.ts ← 401 (RF-3, RF-4); ignora la credencial en lo @Public
 │   ├── guards/roles.guard.ts        ← 403 según @Roles (RF-6)
 │   ├── decorators/public.decorator.ts, roles.decorator.ts, current-user.decorator.ts
@@ -27,6 +26,9 @@ src/
 │   └── dto/login.dto.ts, token-response.dto.ts
 ├── users/
 │   ├── users.module.ts, users.controller.ts, users.service.ts, users.repository.ts
+│   ├── password-hasher.ts           ← hash / verificar / verificar contra hash de referencia
+│   │                                   (acá y no en auth/: lo usan auth y el alta de usuarios;
+│   │                                    así no hay dependencia circular entre módulos — ajuste de T2)
 │   ├── entities/user.entity.ts      ← tabla `User` existente (HashedPassword con select: false)
 │   └── dto/create-user.dto.ts, update-user.dto.ts, user-response.dto.ts
 ├── common/filters/detail-exception.filter.ts ← + header WWW-Authenticate en todo 401

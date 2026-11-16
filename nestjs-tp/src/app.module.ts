@@ -9,6 +9,7 @@ import { ArtistsModule } from './artists/artists.module.js';
 import { DatabaseModule } from './database/database.module.js';
 import { GenresModule } from './genres/genres.module.js';
 import { TracksModule } from './tracks/tracks.module.js';
+import { UsersModule } from './users/users.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -62,6 +63,7 @@ export const observeEnabled = observeModule !== undefined;
     ArtistsModule,
     AlbumsModule,
     TracksModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
