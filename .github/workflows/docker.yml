@@ -1,0 +1,189 @@
+# Imagen Docker, publicación y despliegue (spec nestjs-tp/specs/007-docker-cd/spec.md).
+#
+# Aparte de ci.yml: el check requerido de `main` sigue siendo `gates` (RNF-4).
+#   image    (PR y push a main)  construye 2 veces con los gates adentro, compara
+#                                las imágenes y prueba los casos límite en Docker real
+#   publish  (push a main)       sube A ghcr.io LA MISMA imagen que se probó
+#   deploy   (push a main, o a   despliega por SSH con deploy.sh; sin secrets de
+#            mano con un tag)    servidor se saltea con un aviso (RF-9). A mano
+#                                con el sha de una versión anterior = rollback (RF-10)
+name: Docker
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag YA publicado a desplegar (sha de un commit de main). Sirve para el rollback."
+        required: true
+
+# Permisos mínimos: leer el código. Solo `publish` puede escribir paquetes (RNF-5).
+permissions:
+  contents: read
+
+# En un PR, un push nuevo cancela la corrida anterior. En main no se cancela:
+# cada merge se publica (los despliegues van en fila, ver `deploy`).
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  image:
+    name: image
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    # Dos builds sin caché con los gates adentro, más los casos límite.
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: nestjs-tp
+    env:
+      IMAGE: chinook-ci
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      # Caso 11: un .env con un secreto falso en el contexto del build. El
+      # .dockerignore lo tiene que dejar afuera; smoke-test.sh lo busca en la imagen.
+      - name: Secreto canario en el contexto del build
+        run: |
+          canary="canario-$(openssl rand -hex 16)"
+          echo "CANARY=$canary" >> "$GITHUB_ENV"
+          printf 'JWT_SECRET=%s\n' "$canary" > .env
+
+      # RF-1: la etapa build corre lint, build, test y test:e2e. Si uno falla, no hay imagen.
+      - name: Build A (con los 4 gates adentro)
+        run: docker build --no-cache --progress=plain --tag "$IMAGE:a" .
+
+      - name: Build B (mismo commit, sin caché)
+        run: docker build --no-cache --progress=plain --tag "$IMAGE:b" .
+
+      # RNF-1, caso 3: mismo contenido (hash, permisos y dueño de cada archivo; sin fechas).
+      - name: Comparar las dos imágenes (reproducibilidad)
+        run: |
+          bash deploy/image-manifest.sh "$IMAGE:a" > "$RUNNER_TEMP/a.txt"
+          bash deploy/image-manifest.sh "$IMAGE:b" > "$RUNNER_TEMP/b.txt"
+          echo "Entradas comparadas: $(wc -l < "$RUNNER_TEMP/a.txt")"
+          echo "Id imagen A: $(docker inspect --format '{{.Id}}' "$IMAGE:a")"
+          echo "Id imagen B: $(docker inspect --format '{{.Id}}' "$IMAGE:b") (informativo)"
+          if diff "$RUNNER_TEMP/a.txt" "$RUNNER_TEMP/b.txt"; then
+            echo "OK caso 3: las dos imágenes tienen exactamente el mismo contenido"
+          else
+            echo "FALLA caso 3: las imágenes difieren (arriba, las líneas distintas)"
+            exit 1
+          fi
+
+      - name: Tamaño y capas de la imagen
+        run: |
+          docker image ls "$IMAGE:a"
+          docker history "$IMAGE:a"
+
+      # Casos 1, 5, 6, 10, 11, 12, 16 y 17 con el runner como servidor.
+      - name: Casos límite contra Docker real
+        run: bash deploy/smoke-test.sh "$IMAGE:a"
+
+      # Se publica exactamente la imagen probada: se guarda para el job publish.
+      - name: Guardar la imagen probada
+        if: github.event_name == 'push'
+        run: docker save "$IMAGE:a" | gzip > "$RUNNER_TEMP/imagen.tar.gz"
+
+      - name: Subir la imagen probada como artefacto
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: imagen
+          path: ${{ runner.temp }}/imagen.tar.gz
+          retention-days: 1
+          if-no-files-found: error
+
+  publish:
+    name: publish
+    needs: image
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # El único job que puede escribir en el registry, con el token de la corrida (RF-8).
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Bajar la imagen probada
+        uses: actions/download-artifact@v4
+        with:
+          name: imagen
+          path: ${{ runner.temp }}
+
+      - name: Publicar en ghcr.io (sha del commit y latest)
+        env:
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          repository="ghcr.io/${GITHUB_REPOSITORY,,}"
+          gunzip --stdout "$RUNNER_TEMP/imagen.tar.gz" | docker load
+          echo "$REGISTRY_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+          docker tag chinook-ci:a "$repository:$GITHUB_SHA"
+          docker tag chinook-ci:a "$repository:latest"
+          docker push "$repository:$GITHUB_SHA"
+          docker push "$repository:latest"
+          echo "Publicada $repository:$GITHUB_SHA"
+
+  deploy:
+    name: deploy
+    needs: publish
+    # Tras publicar (push a main), o a mano con un tag ya publicado (rollback).
+    if: ${{ always() && (github.event_name == 'workflow_dispatch' || needs.publish.result == 'success') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # De a uno y en orden: un despliegue viejo nunca pisa a uno nuevo.
+    concurrency:
+      group: deploy
+      cancel-in-progress: false
+    env:
+      TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.sha }}
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+      DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      # El tag termina en un comando remoto: solo letras, números, '.', '_' y '-'.
+      - name: Validar el tag
+        run: |
+          if [[ ! "$TAG" =~ ^[A-Za-z0-9_.-]{1,128}$ ]]; then
+            echo "::error::Tag inválido: '$TAG'"
+            exit 1
+          fi
+          echo "Versión a desplegar: $TAG"
+
+      # Sin servidor configurado, se saltea con un aviso y la corrida queda verde (RF-9, caso 9).
+      - name: ¿Hay un servidor configurado?
+        id: server
+        run: |
+          if [[ -n "$DEPLOY_HOST" && -n "$DEPLOY_USER" && -n "$DEPLOY_SSH_KEY" && -n "$DEPLOY_KNOWN_HOSTS" ]]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice title=Despliegue salteado::No están los secrets DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY y DEPLOY_KNOWN_HOSTS. La imagen $TAG quedó publicada; ver el README para preparar un servidor."
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Copia el compose y el script, y ejecuta deploy.sh en el servidor: si el
+      # SSH falla o el servicio no queda healthy, la corrida queda en rojo.
+      - name: Desplegar por SSH
+        if: steps.server.outputs.configured == 'true'
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          # StrictHostKeyChecking=yes: solo el servidor cuya huella está en DEPLOY_KNOWN_HOSTS.
+          ssh_options=(-i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes -o BatchMode=yes)
+          scp "${ssh_options[@]}" -p nestjs-tp/docker-compose.yml nestjs-tp/deploy/deploy.sh \
+            "$DEPLOY_USER@$DEPLOY_HOST:chinook/"
+          ssh "${ssh_options[@]}" "$DEPLOY_USER@$DEPLOY_HOST" "cd chinook && ./deploy.sh '$TAG'"

@@ -38,6 +38,10 @@ RUN pnpm install --prod --frozen-lockfile \
 # ── runtime: la imagen que se publica ─────────────────────────────────────────
 FROM ${NODE_IMAGE} AS runtime
 
+# Vincula la imagen publicada en ghcr.io con el repositorio (hereda sus permisos).
+LABEL org.opencontainers.image.source="https://github.com/SoftwareSegundo2026/Alexis-Napoli-Programacion" \
+      org.opencontainers.image.description="API Chinook (NestJS) — spec 007"
+
 # Sin herramientas para instalar paquetes: la imagen solo corre la app (RF-2).
 # /var/lib/chinook es donde vive la base de trabajo (volumen): del usuario node.
 RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
