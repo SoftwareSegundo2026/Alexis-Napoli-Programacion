@@ -19,6 +19,7 @@ describe('ArtistsService', () => {
     findById: vi.fn(),
     existsWithName: vi.fn(),
     countAlbums: vi.fn(),
+    countConcerts: vi.fn(),
     create: vi.fn(),
     save: vi.fn(),
     delete: vi.fn(),
@@ -152,6 +153,15 @@ describe('ArtistsService', () => {
       await expect(service.remove(999)).rejects.toBeInstanceOf(
         NotFoundException,
       );
+    });
+
+    it('409 si tiene conciertos aunque no tenga álbumes, y no borra nada (spec 004 RF-14)', async () => {
+      repository.findById.mockResolvedValue(artist(278, 'Nuevo'));
+      repository.countAlbums.mockResolvedValue(0);
+      repository.countConcerts.mockResolvedValue(2);
+
+      await expect(service.remove(278)).rejects.toThrow(/2 concert/);
+      expect(repository.delete).not.toHaveBeenCalled();
     });
   });
 });

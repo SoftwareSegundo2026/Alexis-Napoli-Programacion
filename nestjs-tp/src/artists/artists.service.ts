@@ -53,6 +53,13 @@ export class ArtistsService {
         `Artist has ${albums} album(s) and cannot be deleted`,
       );
     }
+    // Spec 004 RF-14: un concierto (con reservas pagas) no puede quedar huérfano.
+    const concerts = await this.repository.countConcerts(id);
+    if (concerts > 0) {
+      throw new ConflictException(
+        `Artist has ${concerts} concert(s) and cannot be deleted`,
+      );
+    }
     await this.repository.delete(id);
   }
 

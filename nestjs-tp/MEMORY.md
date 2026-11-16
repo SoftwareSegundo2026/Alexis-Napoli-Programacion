@@ -7,9 +7,52 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 - TP-2 (`002-auth-roles`) **cerrado**: T1–T9 y `validate.md` → APROBADO.
 - TP-5 (`005-calidad`) **en curso**: spec, clarify, plan y tareas aprobados; **cerrado**: T1–T7 y `validate.md` → APROBADO (pusheado).
 - TP-6 (`006-ci`) **en curso**: spec, clarify, plan y tareas aprobados; **cerrado**: validate APROBADO, PR #2 mergeado (`d452504`).
-- TP-3 (`003-busqueda`) **en curso** en la rama `tp-3-busqueda`: spec, clarify, plan y tareas
-  aprobados; T1–T5 cerradas (T5 nació en la validación); `validate.md` → APROBADO.
-  Siguiente: push de la rama → PR → merge del usuario. Después: TP-4 (reservas) en su rama.
+- TP-3 (`003-busqueda`) **cerrado**: validate APROBADO; PR #3 mergeado (`dd511e1`), gates verde.
+- TP-4 (`004-reservas`) **en curso** en la rama `tp-4-reservas`: spec y clarify aprobados
+  (27 casos límite; RF-14 artista con conciertos → 409; RF-15 = pendiente de concurrencia del TP-1).
+  Plan y tareas aprobados (7 tareas + T8 agregada por la validación); T1–T8 cerradas.
+  `validate.md` → APROBADO. Siguiente: push → PR → merge del usuario.
+- 16/11 · 004 plan: TypeORM 1.1.3 con better-sqlite3 usa UNA conexión (`queryRunner ??=`) y una
+  transacción abierta dentro de otra es un SAVEPOINT → `TransactionLock` (FIFO) para reservas.
+- 16/11 · 004-T1: `migrations.ts` (Concert/Reservation/Payment, `IF NOT EXISTS`, índice único
+  `(UserId, IdempotencyKey)`), `prepareConnection` (sql-functions + migraciones) en
+  `DatabaseModule` (ahora `@Global` con `TransactionLock` y `Clock`). Las CLAVES FORÁNEAS SE
+  HACEN CUMPLIR (TypeORM activa `foreign_keys`): en tests usar usuarios reales.
+- 16/11 · 004-T2: módulo `concerts` (disponibilidad calculada en la misma consulta con un
+  subselect + `getRawAndEntities`; `StartsAt` con zona y guardado en UTC; fecha futura con `Clock`);
+  RF-14 en `ArtistsService.remove`; contrato `concerts.cases.ts`; protection/docs 26 → 29.
+  DESVÍO: por apuro no se corrió el rojo de los e2e antes de implementar (tests escritos antes).
+  El GATE DE COBERTURA CORTÓ (71,48% < 75: el módulo solo tenía e2e) → unit de service (Test module,
+  sin casts) y repository contra base real → 79,31% / 82,97%. Todo módulo nuevo necesita UNIT tests.
+- 16/11 · 004-T3: `reservation-status.ts` (pura: 3 transiciones válidas, las otras 13 → 409 que
+  nombra los estados; test con los 16 pares) y `payment-gateway.ts` (interfaz, token
+  `PAYMENT_GATEWAY`, `PaymentRejectedError`, simulado que aprueba). typecheck atrapó `charge()` sin
+  parámetro en el simulado.
+- 16/11 · 004-T4: módulo `reservations` (alta = `lock.run(() => dataSource.transaction(...))`:
+  clave previa → misma reserva o 409; concierto 404; empezado 400; cupo 409; INSERT PENDING →
+  `gateway.charge` (rechazo → 402) → pago APPROVED → PAID). `@IdempotencyKey()` es decorador de
+  parámetro: `@Headers()` de Nest NO acepta pipes (se ignoraba en silencio). Test helper: con
+  `key = nextKey()` por defecto, pasar `undefined` usa el default → usar `null`. Dobles en
+  `test/helpers/reservations-doubles.ts` (`ControllablePaymentGateway`, `FakeClock`, `withDoubles`)
+  y `createTestApp(customize)`; el contrato usa el doble para el 402. protection/docs → 32 ops.
+- 16/11 · 004-T5: `reservations-concurrency.e2e` SIN sleep: barrera en el pago + `until(cond)` que
+  cede el turno (setImmediate) hasta que A está cobrando y B está en el candado
+  (`TransactionLock.pending`, nuevo) o cobrando. MUTACIÓN sin candado: caso 13 vendió 12 de 5
+  (sobreventa), caso 1 dio [201, 500] (SAVEPOINT anidado), caso 21 falló; caso 8 pasa igual
+  (lo protege que PENDING no cuenta, no el candado).
+- 16/11 · 004-T6: `cancel` (dueño; repetido → misma; COMPLETED → 409 por `assertTransition`;
+  concierto empezado → 409; reembolso REFUNDED en la misma transacción) y `complete` (admin;
+  repetido → misma; CANCELLED → 409; no empezado → 409), ambos bajo el candado. Contrato con
+  `setNow` (reloj); protection/docs → 34 ops. 412 unit, 494 e2e, cov 81% / 83,68%.
+- 16/11 · 004-T7 (RF-15, pendiente del TP-1): `catalog-concurrency.e2e`, 10 rondas de 2 PATCH
+  simultáneos → siempre gana uno ENTERO. Caracteriza lo existente (sin cambios de código).
+  Mutación "guardar campo por campo cediendo el turno" NO mezcla (Node atiende en orden FIFO):
+  mala mutación, no mal test. Mutación "guardar solo el nombre" → el test FALLA (detecta mezcla).
+- 16/11 · 004-T8 (RNF-5, hallazgo de la validación): `findOneBy`/`update` de TypeORM dejaban los
+  ids como literal (`WHERE "ReservationId" = 2`). El repository de reservas pasó a QueryBuilder con
+  `CAST(:x AS INTEGER)` y el valor como texto. Test con `logging: true` + logger que GUARDA el SQL:
+  ninguna condición compara contra un número literal (rojo: 11 consultas; LIMIT/OFFSET exceptuados).
+  413 unit, 495 e2e, cov 81,12% / 83,68%. Los INSERT de `save()` ya usaban `?`.
 - Tests: `pnpm test` 360 y `pnpm test:e2e` 413 en verde (rama `tp-3-busqueda`).
 - Tests: `pnpm test` 279 (31 archivos) y `pnpm test:e2e` 380 (17 archivos) en verde; lint sin avisos;
   `pnpm exec tsc --noEmit -p tsconfig.json` también limpio (chequea los tipos de `test/`).

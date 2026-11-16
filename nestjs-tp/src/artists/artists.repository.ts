@@ -52,6 +52,15 @@ export class ArtistsRepository {
     return rows[0]?.total ?? 0;
   }
 
+  /** Cantidad de conciertos del artista (spec 004 RF-14). */
+  async countConcerts(artistId: number): Promise<number> {
+    const rows: Array<{ total: number }> = await this.artists.manager.query(
+      'SELECT COUNT(*) AS total FROM Concert WHERE ArtistId = ?',
+      [artistId],
+    );
+    return rows[0]?.total ?? 0;
+  }
+
   create(data: NewArtist): Promise<Artist> {
     return this.artists.save(this.artists.create(data));
   }
