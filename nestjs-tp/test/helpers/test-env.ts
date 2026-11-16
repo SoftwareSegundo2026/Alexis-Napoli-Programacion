@@ -8,9 +8,6 @@ import { fileURLToPath } from 'node:url';
  * `AppModule` (ConfigModule las valida en el momento de importarse).
  */
 
-/** Clave de escritura con la que corren los tests e2e. */
-export const TEST_WRITE_KEY = 'clave-de-prueba-e2e';
-
 /**
  * Secreto de firma de los tests e2e. NO es un secreto real (spec 002, RNF-3):
  * solo firma credenciales de usuarios de prueba sobre una base descartable.

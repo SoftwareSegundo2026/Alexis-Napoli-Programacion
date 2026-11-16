@@ -11,7 +11,7 @@ import { DetailExceptionFilter } from './detail-exception.filter.js';
 
 /** Respuesta de Express simulada: `status()` encadena con `json()`. */
 function createHost() {
-  const response = { status: vi.fn(), json: vi.fn() };
+  const response = { status: vi.fn(), json: vi.fn(), setHeader: vi.fn() };
   response.status.mockReturnValue(response);
   const host = {
     switchToHttp: () => ({ getResponse: () => response }),
@@ -60,6 +60,28 @@ describe('DetailExceptionFilter (contrato {"detail"})', () => {
     expect(conflict.response.json).toHaveBeenCalledWith({
       detail: 'Artist has albums',
     });
+  });
+
+  it('todo 401 anuncia el esquema esperado: WWW-Authenticate: Bearer (spec 002 caso 24)', () => {
+    const { host, response } = createHost();
+
+    filter.catch(
+      new UnauthorizedException('Could not validate credentials'),
+      host,
+    );
+
+    expect(response.setHeader).toHaveBeenCalledWith(
+      'WWW-Authenticate',
+      'Bearer',
+    );
+  });
+
+  it('los demás códigos no llevan WWW-Authenticate', () => {
+    const { host, response } = createHost();
+
+    filter.catch(new NotFoundException('Album not found'), host);
+
+    expect(response.setHeader).not.toHaveBeenCalled();
   });
 
   it('si el mensaje es una lista de errores informa solo el primero', () => {

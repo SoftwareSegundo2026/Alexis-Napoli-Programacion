@@ -7,7 +7,6 @@ import {
   TEMPLATE_DATABASE_PATH,
   TEST_JWT_SECRET,
   TEST_PASSWORD_HASH_ROUNDS,
-  TEST_WRITE_KEY,
 } from './helpers/test-env.js';
 
 /**
@@ -23,7 +22,6 @@ const databasePath = join(tmpdir(), `chinook-e2e-${randomUUID()}.db`);
 copyFileSync(TEMPLATE_DATABASE_PATH, databasePath);
 
 process.env.DATABASE_PATH = databasePath;
-process.env.WRITE_API_KEY = TEST_WRITE_KEY;
 process.env.JWT_SECRET = TEST_JWT_SECRET;
 process.env.PASSWORD_HASH_ROUNDS = TEST_PASSWORD_HASH_ROUNDS;
 

@@ -1,7 +1,5 @@
 /** Variables de entorno que la aplicación valida al arrancar. */
 export interface EnvironmentVariables {
-  /** Clave fija de escritura de la spec 001 (RF-11). Se elimina en 002-T4. */
-  WRITE_API_KEY: string;
   /** Secreto con el que se firman las credenciales (spec 002, RNF-2). Obligatorio. */
   JWT_SECRET: string;
   /** Minutos de vida de una credencial (spec 002, RNF-2). */
@@ -26,21 +24,13 @@ export const MIN_JWT_SECRET_LENGTH = 32;
  * sin poder firmar credenciales o con un secreto adivinable.
  *
  * Devuelve solo las variables que valida; el resto se sigue leyendo de
- * `process.env` a través de `ConfigService`.
+ * `process.env` a través de `ConfigService`. La clave fija del TP-1
+ * (`WRITE_API_KEY`) ya no se usa (spec 002 RF-12): si quedó en un `.env`, se ignora.
  */
 export function validateEnv(
   config: Record<string, unknown>,
 ): EnvironmentVariables {
-  const writeApiKey = readText(config.WRITE_API_KEY);
-  if (writeApiKey === undefined) {
-    throw new Error(
-      'Falta la variable de entorno WRITE_API_KEY (clave de las operaciones de escritura). ' +
-        'Definila en el archivo .env (ver .env.example).',
-    );
-  }
-
   return {
-    WRITE_API_KEY: writeApiKey,
     JWT_SECRET: readJwtSecret(config.JWT_SECRET),
     JWT_EXPIRES_MINUTES: readInteger(
       'JWT_EXPIRES_MINUTES',

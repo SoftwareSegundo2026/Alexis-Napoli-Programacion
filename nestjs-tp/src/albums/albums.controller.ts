@@ -17,6 +17,8 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Public } from '../auth/decorators/public.decorator.js';
+import { Roles } from '../auth/decorators/roles.decorator.js';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto.js';
 import {
   ApiConflict,
@@ -36,6 +38,7 @@ export class AlbumsController {
   constructor(private readonly albumsService: AlbumsService) {}
 
   @Get()
+  @Public()
   @ApiOkResponse({ type: [AlbumResponseDto] })
   @ApiInvalidRequest()
   async findAll(
@@ -46,6 +49,7 @@ export class AlbumsController {
   }
 
   @Get(':id')
+  @Public()
   @ApiOkResponse({ type: AlbumResponseDto })
   @ApiInvalidRequest()
   @ApiNotFound()
@@ -56,6 +60,7 @@ export class AlbumsController {
   }
 
   @Post()
+  @Roles('admin')
   @ApiWriteOperation()
   @ApiCreatedResponse({ type: AlbumResponseDto })
   @ApiInvalidRequest()
@@ -64,6 +69,7 @@ export class AlbumsController {
   }
 
   @Patch(':id')
+  @Roles('admin')
   @ApiWriteOperation()
   @ApiOkResponse({ type: AlbumResponseDto })
   @ApiInvalidRequest()
@@ -79,6 +85,7 @@ export class AlbumsController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Roles('admin')
   @ApiWriteOperation()
   @ApiNoContentResponse({ description: 'Eliminado' })
   @ApiInvalidRequest()

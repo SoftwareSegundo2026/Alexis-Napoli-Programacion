@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { UsersModule } from '../users/users.module.js';
 import { AuthService } from './auth.service.js';
@@ -23,8 +24,13 @@ import { RolesGuard } from './guards/roles.guard.js';
       }),
     }),
   ],
-  // Los guards se registran como globales (APP_GUARD) en la tarea 002-T4.
-  providers: [AuthService, AuthenticationGuard, RolesGuard],
+  providers: [
+    AuthService,
+    // Guards GLOBALES, en este orden: primero quién sos (401), después qué
+    // podés hacer (403). Toda ruta queda protegida salvo las @Public().
+    { provide: APP_GUARD, useClass: AuthenticationGuard },
+    { provide: APP_GUARD, useClass: RolesGuard },
+  ],
   exports: [AuthService],
 })
 export class AuthModule {}

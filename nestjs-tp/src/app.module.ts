@@ -20,8 +20,8 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
  * línea siguiente. Por eso se guarda en una variable: así queda explícito que
  * el `.env` se carga *antes* de decidir si Observe se registra o no.
  *
- * `validateEnv` corre en ese mismo momento: sin `WRITE_API_KEY` la aplicación
- * no arranca (RNF-3).
+ * `validateEnv` corre en ese mismo momento: sin un `JWT_SECRET` válido la
+ * aplicación no arranca (spec 002 RNF-2).
  */
 const configModule = ConfigModule.forRoot({
   isGlobal: true,

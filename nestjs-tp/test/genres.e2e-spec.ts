@@ -2,7 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types.js';
 import { createTestApp } from './helpers/test-app.js';
-import { TEST_WRITE_KEY } from './helpers/test-env.js';
+import { bearer, seedTestUsers } from './helpers/auth.js';
 
 interface GenreBody {
   GenreId: number;
@@ -18,8 +18,11 @@ const BASE = '/api/v1/genres';
 describe('Géneros (e2e)', () => {
   let app: INestApplication<App>;
 
+  let adminToken: string;
+
   beforeAll(async () => {
     app = await createTestApp();
+    adminToken = (await seedTestUsers(app)).adminToken;
   });
 
   afterAll(async () => {
@@ -27,7 +30,9 @@ describe('Géneros (e2e)', () => {
   });
 
   const http = () => request(app.getHttpServer());
-  const withKey = (test: request.Test) => test.set('X-API-Key', TEST_WRITE_KEY);
+  // Escrituras como admin (spec 002: reemplaza a la clave fija del TP-1).
+  const asAdmin = (test: request.Test) =>
+    test.set('Authorization', bearer(adminToken));
 
   async function countGenres(): Promise<number> {
     const response = await http().get(BASE).query({ limit: 100 }).expect(200);
@@ -35,7 +40,7 @@ describe('Géneros (e2e)', () => {
   }
 
   async function createGenre(name: string): Promise<GenreBody> {
-    const response = await withKey(http().post(BASE))
+    const response = await asAdmin(http().post(BASE))
       .send({ Name: name })
       .expect(201);
     return response.body as GenreBody;
@@ -112,7 +117,7 @@ describe('Géneros (e2e)', () => {
       async (body, field) => {
         const before = await countGenres();
 
-        const response = await withKey(http().post(BASE))
+        const response = await asAdmin(http().post(BASE))
           .send(body)
           .expect(400);
 
@@ -126,7 +131,7 @@ describe('Géneros (e2e)', () => {
       async (name) => {
         const before = await countGenres();
 
-        const response = await withKey(http().post(BASE))
+        const response = await asAdmin(http().post(BASE))
           .send({ Name: name })
           .expect(409);
 
@@ -135,7 +140,7 @@ describe('Géneros (e2e)', () => {
       },
     );
 
-    it('sin clave → 401 y no guarda (RF-11)', async () => {
+    it('sin credencial → 401 y no guarda (spec 002 RF-3)', async () => {
       const before = await countGenres();
 
       await http().post(BASE).send({ Name: 'Sin Clave' }).expect(401);
@@ -148,7 +153,7 @@ describe('Géneros (e2e)', () => {
     it('cambia el nombre y responde 200 con el género actualizado', async () => {
       const created = await createGenre('Para Renombrar');
 
-      await withKey(http().patch(`${BASE}/${created.GenreId}`))
+      await asAdmin(http().patch(`${BASE}/${created.GenreId}`))
         .send({ Name: 'Renombrado' })
         .expect(200, { GenreId: created.GenreId, Name: 'Renombrado' });
       await http()
@@ -157,39 +162,39 @@ describe('Géneros (e2e)', () => {
     });
 
     it('cuerpo vacío {} → 200 y el género queda igual', async () => {
-      await withKey(http().patch(`${BASE}/3`))
+      await asAdmin(http().patch(`${BASE}/3`))
         .send({})
         .expect(200, { GenreId: 3, Name: 'Metal' });
     });
 
     it('reenviar su propio nombre no es conflicto → 200', async () => {
-      await withKey(http().patch(`${BASE}/3`))
+      await asAdmin(http().patch(`${BASE}/3`))
         .send({ Name: 'Metal' })
         .expect(200, { GenreId: 3, Name: 'Metal' });
     });
 
     it('el nombre de OTRO género → 409', async () => {
-      await withKey(http().patch(`${BASE}/3`))
+      await asAdmin(http().patch(`${BASE}/3`))
         .send({ Name: 'jazz' })
         .expect(409);
       await http().get(`${BASE}/3`).expect(200, { GenreId: 3, Name: 'Metal' });
     });
 
     it('Name en null → 400', async () => {
-      const response = await withKey(http().patch(`${BASE}/3`))
+      const response = await asAdmin(http().patch(`${BASE}/3`))
         .send({ Name: null })
         .expect(400);
       expect((response.body as ErrorBody).detail).toMatch(/Name/);
     });
 
     it('id inexistente → 404', async () => {
-      await withKey(http().patch(`${BASE}/9999`))
+      await asAdmin(http().patch(`${BASE}/9999`))
         .send({ Name: 'Nadie' })
         .expect(404, { detail: 'Genre not found' });
     });
 
     it('id inexistente y cuerpo inválido → 400 (la validación va antes que el 404)', async () => {
-      await withKey(http().patch(`${BASE}/9999`))
+      await asAdmin(http().patch(`${BASE}/9999`))
         .send({ Name: '' })
         .expect(400);
     });
@@ -197,7 +202,7 @@ describe('Géneros (e2e)', () => {
 
   describe('baja (RF-8, RF-12)', () => {
     it('un género que usan pistas → 409 que explica la causa, y no se borra', async () => {
-      const response = await withKey(http().delete(`${BASE}/1`)).expect(409);
+      const response = await asAdmin(http().delete(`${BASE}/1`)).expect(409);
 
       expect((response.body as ErrorBody).detail).toMatch(/track/);
       await http().get(`${BASE}/1`).expect(200);
@@ -206,13 +211,13 @@ describe('Géneros (e2e)', () => {
     it('un género sin pistas → 204 sin cuerpo; después 404', async () => {
       const created = await createGenre('Para Borrar');
 
-      const response = await withKey(
+      const response = await asAdmin(
         http().delete(`${BASE}/${created.GenreId}`),
       ).expect(204);
 
       expect(response.text).toBe('');
       await http().get(`${BASE}/${created.GenreId}`).expect(404);
-      await withKey(http().delete(`${BASE}/${created.GenreId}`)).expect(404);
+      await asAdmin(http().delete(`${BASE}/${created.GenreId}`)).expect(404);
     });
   });
 });

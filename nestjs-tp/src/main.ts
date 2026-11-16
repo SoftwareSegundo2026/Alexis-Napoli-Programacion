@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule, ObserveInstrument, observeEnabled } from './app.module.js';
 import { configureApp } from './app.setup.js';
 
@@ -11,7 +12,7 @@ async function bootstrap() {
     );
   }
 
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     // El hook de instrumentación solo tiene sentido con el módulo de Observe
     // registrado: sin ese módulo no hay agente que consuma los spans.
     instrument: observeEnabled ? ObserveInstrument : undefined,

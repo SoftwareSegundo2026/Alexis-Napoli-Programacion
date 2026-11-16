@@ -4,8 +4,9 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 
 ## Estado actual
 - TP-1 (`001-chinook-nest`) **cerrado, validado y pusheado** (`91124e0`).
-- TP-2 (`002-auth-roles`): spec, clarify, plan y tareas aprobados. **T1–T3 hechas**; siguiente: T4.
-- Tests: `pnpm test` 211 (25 archivos) y `pnpm test:e2e` 168 (9 archivos) en verde; lint sin avisos.
+- TP-2 (`002-auth-roles`): spec, clarify, plan y tareas aprobados. **T1–T4 hechas**; siguiente: T5.
+- Tests: `pnpm test` 204 (25 archivos) y `pnpm test:e2e` 196 (9 archivos) en verde; lint sin avisos;
+  `pnpm exec tsc --noEmit -p tsconfig.json` también limpio (chequea los tipos de `test/`).
 
 ## Decisiones (y por qué)
 - 15/11 · Base `programacion/nestjs-music`; constitución del docente sin cambios; lint con
@@ -32,6 +33,15 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   base). Guards `AuthenticationGuard` y `RolesGuard` + `@Public`/`@Roles`/`@CurrentUser`.
   `AuthModule` registrado en `AppModule` pero los guards AÚN no son globales (eso es T4).
   Tests de `AuthService` con `JwtService` REAL (vencida, alterada, otro secreto, sin firma).
+- 16/11 · 002-T4 (conmutación): guards como `APP_GUARD`; `useBodyParser('json')` + `deferJsonSyntaxError`
+  + `BodyParseErrorInterceptor`; `WWW-Authenticate: Bearer` en el filtro; `@Public` en GETs y
+  `AppController`, `@Roles('admin')` en escrituras; clave fija y `WRITE_API_KEY` eliminadas.
+  Tests del TP-1 MIGRADOS (no borrados): `withKey` → `asAdmin` (token de `test_admin` sembrado
+  por `test/helpers/auth.ts`). `write-key.middleware.spec` (13 casos) eliminado junto con el
+  middleware; su cobertura pasó a: clave exacta/alterada/vacía/ausente → `auth.service.spec` +
+  `security.e2e`; GET libre → `security.e2e` (lecturas públicas); escritura sin credencial → 401
+  → `guards.spec` + `security.e2e` (12 rutas); "config sin clave" → `env.validation.spec` (JWT_SECRET).
+  Swagger sigue mostrando X-API-Key hasta T8 (documentado en `app.setup.ts`).
 
 ## Decisiones del plan 002 a recordar en las próximas tareas
 - Guards globales (`APP_GUARD`, autenticación → roles); lo público con `@Public()`.
@@ -54,6 +64,5 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   comprobar el valor y `JSON.stringify`, no `toHaveProperty`.
 
 ## Próximos pasos
-- 002-T4: guards como `APP_GUARD`, JSON diferido, `WWW-Authenticate`, decorar catálogo y `GET /`,
-  eliminar la clave fija, migrar los tests del TP-1 (helper `test/helpers/auth.ts`).
+- 002-T5: `POST /auth/token` (@Public) + `test/auth.e2e-spec.ts` (casos 1, 2, 9, 10, 11, 20, 21).
 - Pendiente para el TP-4: test de modificaciones concurrentes (observación de `001/validate.md`).

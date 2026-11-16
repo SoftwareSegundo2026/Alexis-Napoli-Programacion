@@ -2,7 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types.js';
 import { createTestApp } from './helpers/test-app.js';
-import { TEST_WRITE_KEY } from './helpers/test-env.js';
+import { bearer, seedTestUsers } from './helpers/auth.js';
 
 interface AlbumBody {
   AlbumId: number;
@@ -21,8 +21,11 @@ const BASE = '/api/v1/albums';
 describe('Álbumes (e2e)', () => {
   let app: INestApplication<App>;
 
+  let adminToken: string;
+
   beforeAll(async () => {
     app = await createTestApp();
+    adminToken = (await seedTestUsers(app)).adminToken;
   });
 
   afterAll(async () => {
@@ -30,7 +33,9 @@ describe('Álbumes (e2e)', () => {
   });
 
   const http = () => request(app.getHttpServer());
-  const withKey = (test: request.Test) => test.set('X-API-Key', TEST_WRITE_KEY);
+  // Escrituras como admin (spec 002: reemplaza a la clave fija del TP-1).
+  const asAdmin = (test: request.Test) =>
+    test.set('Authorization', bearer(adminToken));
 
   async function albumCount(): Promise<number> {
     const response = await http()
@@ -41,7 +46,7 @@ describe('Álbumes (e2e)', () => {
   }
 
   async function createAlbum(body: object): Promise<AlbumBody> {
-    const response = await withKey(http().post(BASE)).send(body).expect(201);
+    const response = await asAdmin(http().post(BASE)).send(body).expect(201);
     return response.body as AlbumBody;
   }
 
@@ -98,7 +103,7 @@ describe('Álbumes (e2e)', () => {
     it('ArtistId inexistente → 400 que lo nombra, y no guarda', async () => {
       const before = await albumCount();
 
-      const response = await withKey(http().post(BASE))
+      const response = await asAdmin(http().post(BASE))
         .send({ Title: 'Huérfano', ArtistId: 9999 })
         .expect(400);
 
@@ -113,7 +118,7 @@ describe('Álbumes (e2e)', () => {
       [{ Title: 'Texto', ArtistId: 'uno' }, /ArtistId/],
       [{ Title: 'Extra', ArtistId: 1, ArtistName: 'X' }, /ArtistName/],
     ])('cuerpo inválido %j → 400 que nombra el campo', async (body, field) => {
-      const response = await withKey(http().post(BASE)).send(body).expect(400);
+      const response = await asAdmin(http().post(BASE)).send(body).expect(400);
 
       expect((response.body as ErrorBody).detail).toMatch(field);
     });
@@ -127,7 +132,7 @@ describe('Álbumes (e2e)', () => {
         ImageUrl: '/img/mover.jpg',
       });
 
-      await withKey(http().patch(`${BASE}/${created.AlbumId}`))
+      await asAdmin(http().patch(`${BASE}/${created.AlbumId}`))
         .send({ ArtistId: 2 })
         .expect(200, {
           AlbumId: created.AlbumId,
@@ -139,7 +144,7 @@ describe('Álbumes (e2e)', () => {
     });
 
     it('ArtistId inexistente al modificar → 400 y no cambia nada', async () => {
-      await withKey(http().patch(`${BASE}/2`))
+      await asAdmin(http().patch(`${BASE}/2`))
         .send({ ArtistId: 9999 })
         .expect(400);
       const response = await http().get(`${BASE}/2`).expect(200);
@@ -149,13 +154,13 @@ describe('Álbumes (e2e)', () => {
     it('{} → 200 sin cambios; Title en null → 400; id inexistente → 404', async () => {
       const before = await http().get(`${BASE}/3`).expect(200);
 
-      await withKey(http().patch(`${BASE}/3`))
+      await asAdmin(http().patch(`${BASE}/3`))
         .send({})
         .expect(200, before.body as AlbumBody);
-      await withKey(http().patch(`${BASE}/3`))
+      await asAdmin(http().patch(`${BASE}/3`))
         .send({ Title: null })
         .expect(400);
-      await withKey(http().patch(`${BASE}/9999`))
+      await asAdmin(http().patch(`${BASE}/9999`))
         .send({ Title: 'Nadie' })
         .expect(404, { detail: 'Album not found' });
     });
@@ -163,7 +168,7 @@ describe('Álbumes (e2e)', () => {
 
   describe('baja (RF-8, RF-12)', () => {
     it('un álbum con pistas → 409 que lo explica, y no se borra', async () => {
-      const response = await withKey(http().delete(`${BASE}/1`)).expect(409);
+      const response = await asAdmin(http().delete(`${BASE}/1`)).expect(409);
 
       expect((response.body as ErrorBody).detail).toMatch(/track/);
       await http().get(`${BASE}/1`).expect(200);
@@ -172,7 +177,7 @@ describe('Álbumes (e2e)', () => {
     it('un álbum sin pistas → 204 sin cuerpo; después 404', async () => {
       const created = await createAlbum({ Title: 'Para Borrar', ArtistId: 1 });
 
-      const response = await withKey(
+      const response = await asAdmin(
         http().delete(`${BASE}/${created.AlbumId}`),
       ).expect(204);
 
@@ -181,15 +186,15 @@ describe('Álbumes (e2e)', () => {
     });
 
     it('al borrar el álbum, el artista recupera la posibilidad de borrarse si no le quedan otros', async () => {
-      const artist = await withKey(http().post('/api/v1/artists'))
+      const artist = await asAdmin(http().post('/api/v1/artists'))
         .send({ Name: 'Artista Efímero' })
         .expect(201);
       const artistId = (artist.body as { ArtistId: number }).ArtistId;
       const created = await createAlbum({ Title: 'Único', ArtistId: artistId });
 
-      await withKey(http().delete(`/api/v1/artists/${artistId}`)).expect(409);
-      await withKey(http().delete(`${BASE}/${created.AlbumId}`)).expect(204);
-      await withKey(http().delete(`/api/v1/artists/${artistId}`)).expect(204);
+      await asAdmin(http().delete(`/api/v1/artists/${artistId}`)).expect(409);
+      await asAdmin(http().delete(`${BASE}/${created.AlbumId}`)).expect(204);
+      await asAdmin(http().delete(`/api/v1/artists/${artistId}`)).expect(204);
     });
   });
 });

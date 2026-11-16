@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
 import { App } from 'supertest/types.js';
 import { AppModule } from '../../src/app.module.js';
@@ -14,7 +15,7 @@ export async function createTestApp(): Promise<INestApplication<App>> {
     imports: [AppModule],
   }).compile();
 
-  const app = moduleFixture.createNestApplication<INestApplication<App>>();
+  const app = moduleFixture.createNestApplication<NestExpressApplication>();
   configureApp(app);
   await app.init();
   return app;

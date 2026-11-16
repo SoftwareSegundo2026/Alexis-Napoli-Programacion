@@ -2,7 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types.js';
 import { createTestApp } from './helpers/test-app.js';
-import { TEST_WRITE_KEY } from './helpers/test-env.js';
+import { bearer, seedTestUsers } from './helpers/auth.js';
 
 interface TrackBody {
   TrackId: number;
@@ -50,8 +50,11 @@ const newTrack = {
 describe('Pistas (e2e)', () => {
   let app: INestApplication<App>;
 
+  let adminToken: string;
+
   beforeAll(async () => {
     app = await createTestApp();
+    adminToken = (await seedTestUsers(app)).adminToken;
   });
 
   afterAll(async () => {
@@ -59,7 +62,9 @@ describe('Pistas (e2e)', () => {
   });
 
   const http = () => request(app.getHttpServer());
-  const withKey = (test: request.Test) => test.set('X-API-Key', TEST_WRITE_KEY);
+  // Escrituras como admin (spec 002: reemplaza a la clave fija del TP-1).
+  const asAdmin = (test: request.Test) =>
+    test.set('Authorization', bearer(adminToken));
 
   async function lastPageLength(): Promise<number> {
     const response = await http()
@@ -70,7 +75,7 @@ describe('Pistas (e2e)', () => {
   }
 
   async function createTrack(body: object): Promise<TrackBody> {
-    const response = await withKey(http().post(BASE)).send(body).expect(201);
+    const response = await asAdmin(http().post(BASE)).send(body).expect(201);
     return response.body as TrackBody;
   }
 
@@ -175,7 +180,7 @@ describe('Pistas (e2e)', () => {
       async (body, field) => {
         const before = await lastPageLength();
 
-        const response = await withKey(http().post(BASE))
+        const response = await asAdmin(http().post(BASE))
           .send(body)
           .expect(400);
 
@@ -194,7 +199,7 @@ describe('Pistas (e2e)', () => {
     ])(
       'cuerpo inválido → 400 que nombra el campo (%#)',
       async (body, field) => {
-        const response = await withKey(http().post(BASE))
+        const response = await asAdmin(http().post(BASE))
           .send(body)
           .expect(400);
 
@@ -211,7 +216,7 @@ describe('Pistas (e2e)', () => {
         GenreId: 1,
       });
 
-      const response = await withKey(http().patch(`${BASE}/${created.TrackId}`))
+      const response = await asAdmin(http().patch(`${BASE}/${created.TrackId}`))
         .send({ GenreId: 3, UnitPrice: 1.29 })
         .expect(200);
 
@@ -226,7 +231,7 @@ describe('Pistas (e2e)', () => {
     it('AlbumId en null quita el álbum → AlbumTitle null', async () => {
       const created = await createTrack({ ...newTrack, AlbumId: 1 });
 
-      const response = await withKey(http().patch(`${BASE}/${created.TrackId}`))
+      const response = await asAdmin(http().patch(`${BASE}/${created.TrackId}`))
         .send({ AlbumId: null })
         .expect(200);
 
@@ -236,7 +241,7 @@ describe('Pistas (e2e)', () => {
     });
 
     it('id relacionado inexistente al modificar → 400 y no cambia nada', async () => {
-      await withKey(http().patch(`${BASE}/2`))
+      await asAdmin(http().patch(`${BASE}/2`))
         .send({ MediaTypeId: 99 })
         .expect(400);
       const response = await http().get(`${BASE}/2`).expect(200);
@@ -246,13 +251,13 @@ describe('Pistas (e2e)', () => {
     it('{} → 200 sin cambios; obligatorio en null → 400; id inexistente → 404', async () => {
       const before = await http().get(`${BASE}/2`).expect(200);
 
-      await withKey(http().patch(`${BASE}/2`))
+      await asAdmin(http().patch(`${BASE}/2`))
         .send({})
         .expect(200, before.body as TrackBody);
-      await withKey(http().patch(`${BASE}/2`))
+      await asAdmin(http().patch(`${BASE}/2`))
         .send({ Milliseconds: null })
         .expect(400);
-      await withKey(http().patch(`${BASE}/99999`))
+      await asAdmin(http().patch(`${BASE}/99999`))
         .send({ Name: 'Nadie' })
         .expect(404, { detail: 'Track not found' });
     });
@@ -260,7 +265,7 @@ describe('Pistas (e2e)', () => {
 
   describe('baja (RF-8, RF-12)', () => {
     it('una pista original (en facturas y playlists) → 409 que lo explica, y no se borra', async () => {
-      const response = await withKey(http().delete(`${BASE}/1`)).expect(409);
+      const response = await asAdmin(http().delete(`${BASE}/1`)).expect(409);
 
       expect((response.body as ErrorBody).detail).toMatch(/invoice|playlist/);
       await http().get(`${BASE}/1`).expect(200);
@@ -269,7 +274,7 @@ describe('Pistas (e2e)', () => {
     it('una pista recién creada y sin referencias → 204 sin cuerpo; después 404', async () => {
       const created = await createTrack(newTrack);
 
-      const response = await withKey(
+      const response = await asAdmin(
         http().delete(`${BASE}/${created.TrackId}`),
       ).expect(204);
 
@@ -278,15 +283,15 @@ describe('Pistas (e2e)', () => {
     });
 
     it('al borrar la única pista de un álbum nuevo, el álbum se puede borrar', async () => {
-      const album = await withKey(http().post('/api/v1/albums'))
+      const album = await asAdmin(http().post('/api/v1/albums'))
         .send({ Title: 'Álbum Efímero', ArtistId: 1 })
         .expect(201);
       const albumId = (album.body as { AlbumId: number }).AlbumId;
       const created = await createTrack({ ...newTrack, AlbumId: albumId });
 
-      await withKey(http().delete(`/api/v1/albums/${albumId}`)).expect(409);
-      await withKey(http().delete(`${BASE}/${created.TrackId}`)).expect(204);
-      await withKey(http().delete(`/api/v1/albums/${albumId}`)).expect(204);
+      await asAdmin(http().delete(`/api/v1/albums/${albumId}`)).expect(409);
+      await asAdmin(http().delete(`${BASE}/${created.TrackId}`)).expect(204);
+      await asAdmin(http().delete(`/api/v1/albums/${albumId}`)).expect(204);
     });
   });
 });

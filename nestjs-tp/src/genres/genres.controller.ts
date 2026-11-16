@@ -17,6 +17,8 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Public } from '../auth/decorators/public.decorator.js';
+import { Roles } from '../auth/decorators/roles.decorator.js';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto.js';
 import {
   ApiConflict,
@@ -36,6 +38,7 @@ export class GenresController {
   constructor(private readonly genresService: GenresService) {}
 
   @Get()
+  @Public()
   @ApiOkResponse({ type: [GenreResponseDto] })
   @ApiInvalidRequest()
   async findAll(
@@ -46,6 +49,7 @@ export class GenresController {
   }
 
   @Get(':id')
+  @Public()
   @ApiOkResponse({ type: GenreResponseDto })
   @ApiInvalidRequest()
   @ApiNotFound()
@@ -56,6 +60,7 @@ export class GenresController {
   }
 
   @Post()
+  @Roles('admin')
   @ApiWriteOperation()
   @ApiCreatedResponse({ type: GenreResponseDto })
   @ApiInvalidRequest()
@@ -65,6 +70,7 @@ export class GenresController {
   }
 
   @Patch(':id')
+  @Roles('admin')
   @ApiWriteOperation()
   @ApiOkResponse({ type: GenreResponseDto })
   @ApiInvalidRequest()
@@ -81,6 +87,7 @@ export class GenresController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Roles('admin')
   @ApiWriteOperation()
   @ApiNoContentResponse({ description: 'Eliminado' })
   @ApiInvalidRequest()

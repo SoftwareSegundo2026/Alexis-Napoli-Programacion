@@ -11,7 +11,7 @@ import {
 const SECRET = 's'.repeat(MIN_JWT_SECRET_LENGTH);
 
 /** Lo mínimo obligatorio para que la configuración sea válida. */
-const required = { WRITE_API_KEY: 'clave', JWT_SECRET: SECRET };
+const required = { JWT_SECRET: SECRET };
 
 const defaults = {
   DATABASE_PATH: DEFAULT_DATABASE_PATH,
@@ -21,40 +21,34 @@ const defaults = {
 };
 
 describe('validateEnv (spec 001 RNF-3, spec 002 RNF-2)', () => {
-  it('falla con un mensaje claro si falta WRITE_API_KEY', () => {
-    expect(() => validateEnv({ JWT_SECRET: SECRET })).toThrow(/WRITE_API_KEY/);
+  // Spec 002 RF-12: la clave fija del TP-1 ya no se exige. Los dos casos que la
+  // exigían ("falta" y "vacía") se transformaron en estos dos.
+  it('WRITE_API_KEY ya no es obligatoria: sin ella la app arranca (spec 002 RF-12)', () => {
+    expect(() => validateEnv({ JWT_SECRET: SECRET })).not.toThrow();
+    expect(() =>
+      validateEnv({ JWT_SECRET: SECRET, WRITE_API_KEY: '   ' }),
+    ).not.toThrow();
   });
 
-  it('falla si WRITE_API_KEY está vacía o tiene solo espacios', () => {
-    expect(() => validateEnv({ ...required, WRITE_API_KEY: '' })).toThrow(
-      /WRITE_API_KEY/,
-    );
-    expect(() => validateEnv({ ...required, WRITE_API_KEY: '   ' })).toThrow(
-      /WRITE_API_KEY/,
-    );
+  it('WRITE_API_KEY, si quedó en un .env viejo, se ignora y no se devuelve', () => {
+    expect(
+      validateEnv({ ...required, WRITE_API_KEY: 'clave-vieja' }),
+    ).not.toHaveProperty('WRITE_API_KEY');
   });
 
   it('con lo obligatorio usa los valores por defecto para el resto', () => {
-    expect(
-      validateEnv({ ...required, WRITE_API_KEY: 'clave-secreta' }),
-    ).toEqual({
-      WRITE_API_KEY: 'clave-secreta',
-      JWT_SECRET: SECRET,
-      ...defaults,
-    });
+    expect(validateEnv(required)).toEqual({ JWT_SECRET: SECRET, ...defaults });
   });
 
   it('respeta DATABASE_PATH y PORT cuando vienen definidos', () => {
     expect(
       validateEnv({
         ...required,
-        WRITE_API_KEY: ' clave-secreta ',
         DATABASE_PATH: '/tmp/otra.db',
         PORT: '3300',
       }),
     ).toEqual({
       ...defaults,
-      WRITE_API_KEY: 'clave-secreta',
       JWT_SECRET: SECRET,
       DATABASE_PATH: '/tmp/otra.db',
       PORT: 3300,
@@ -76,15 +70,12 @@ describe('validateEnv (spec 001 RNF-3, spec 002 RNF-2)', () => {
       'JWT_SECRET',
       'PASSWORD_HASH_ROUNDS',
       'PORT',
-      'WRITE_API_KEY',
     ]);
   });
 
   describe('secreto de firma de la credencial (RNF-2)', () => {
     it('falla con un mensaje claro si falta JWT_SECRET', () => {
-      expect(() => validateEnv({ WRITE_API_KEY: 'clave' })).toThrow(
-        /JWT_SECRET/,
-      );
+      expect(() => validateEnv({})).toThrow(/JWT_SECRET/);
     });
 
     it.each(['', '   ', 'corto', 'x'.repeat(MIN_JWT_SECRET_LENGTH - 1)])(

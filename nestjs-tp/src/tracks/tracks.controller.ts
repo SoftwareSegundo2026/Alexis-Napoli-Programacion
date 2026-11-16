@@ -17,6 +17,8 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Public } from '../auth/decorators/public.decorator.js';
+import { Roles } from '../auth/decorators/roles.decorator.js';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto.js';
 import {
   ApiConflict,
@@ -36,6 +38,7 @@ export class TracksController {
   constructor(private readonly tracksService: TracksService) {}
 
   @Get()
+  @Public()
   @ApiOkResponse({ type: [TrackResponseDto] })
   @ApiInvalidRequest()
   async findAll(
@@ -46,6 +49,7 @@ export class TracksController {
   }
 
   @Get(':id')
+  @Public()
   @ApiOkResponse({ type: TrackResponseDto })
   @ApiInvalidRequest()
   @ApiNotFound()
@@ -56,6 +60,7 @@ export class TracksController {
   }
 
   @Post()
+  @Roles('admin')
   @ApiWriteOperation()
   @ApiCreatedResponse({ type: TrackResponseDto })
   @ApiInvalidRequest()
@@ -64,6 +69,7 @@ export class TracksController {
   }
 
   @Patch(':id')
+  @Roles('admin')
   @ApiWriteOperation()
   @ApiOkResponse({ type: TrackResponseDto })
   @ApiInvalidRequest()
@@ -79,6 +85,7 @@ export class TracksController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Roles('admin')
   @ApiWriteOperation()
   @ApiNoContentResponse({ description: 'Eliminada' })
   @ApiInvalidRequest()

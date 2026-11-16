@@ -31,7 +31,7 @@ Reglas: una tarea por vez, tests primero (en rojo), gates
       sin credencial → 401, inactivo → 401, rol insuficiente → 403, admin pasa).
       Estimación: 30 min · depende de: T2
 
-- [ ] **T4. Conmutación: guards globales y migración del TP-1.** RF-3–RF-6, RF-12
+- [x] **T4. Conmutación: guards globales y migración del TP-1.** RF-3–RF-6, RF-12
       Registrar los guards como `APP_GUARD`; lector de JSON diferido + interceptor; header
       `WWW-Authenticate` en el filtro; `@Public`/`@Roles('admin')` en el catálogo y `GET /`;
       eliminar el middleware de la clave y `WRITE_API_KEY`; migrar los tests del TP-1 a la

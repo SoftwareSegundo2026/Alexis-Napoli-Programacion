@@ -32,8 +32,13 @@ export class DetailExceptionFilter implements ExceptionFilter {
     const response = host.switchToHttp().getResponse<Response>();
 
     if (exception instanceof HttpException) {
+      const status = exception.getStatus();
+      if (status === HttpStatus.UNAUTHORIZED) {
+        // Estándar HTTP: un 401 anuncia qué esquema de credencial se espera (spec 002).
+        response.setHeader('WWW-Authenticate', 'Bearer');
+      }
       const body: ErrorBody = { detail: detailOf(exception) };
-      response.status(exception.getStatus()).json(body);
+      response.status(status).json(body);
       return;
     }
 
