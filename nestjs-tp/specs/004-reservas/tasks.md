@@ -22,7 +22,7 @@ Reglas: una tarea por vez, tests primero (en rojo), gates en verde (`lint`, `bui
       = capacidad sin reservas, artista con conciertos → 409) y el inventario del contrato.
       Estimación: 35 min · depende de: T1
 
-- [ ] **T3. Máquina de estados y gateway de pago.** RF-11, RNF-3 · caso 7
+- [x] **T3. Máquina de estados y gateway de pago.** RF-11, RNF-3 · caso 7
       `assertTransition` pura; `PaymentGateway` (interfaz, token, simulado).
       Hecho cuando: `pnpm test` pasa la tabla completa de transiciones (3 válidas, todas las demás
       → `ConflictException`, incluida `PAID → PENDING`) y el gateway simulado aprueba.
