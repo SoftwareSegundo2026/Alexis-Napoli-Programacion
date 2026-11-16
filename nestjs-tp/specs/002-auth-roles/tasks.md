@@ -6,7 +6,7 @@ Reglas: una tarea por vez, tests primero (en rojo), gates
 `pnpm lint && pnpm build && pnpm test && pnpm test:e2e` en verde, un commit
 `002-Tn: …`, `[x]` acá y `MEMORY.md` actualizado. Después, **PARA**.
 
-- [ ] **T1. Dependencias y configuración.** RNF-2
+- [x] **T1. Dependencias y configuración.** RNF-2
       `@nestjs/jwt` y `bcryptjs`; `JWT_SECRET` obligatorio (≥ 32 caracteres),
       `JWT_EXPIRES_MINUTES` (30 por defecto), `PASSWORD_HASH_ROUNDS` (12 por defecto);
       `.env.example` y entorno de los e2e. `WRITE_API_KEY` sigue hasta la T4.
