@@ -16,7 +16,7 @@ Después, **PARA**. Push de la rama con OK del usuario; entra a `main` por PR (s
       parámetro; valores válidos convertidos a número; defaults de `sort`/`order`).
       Estimación: 30 min · depende de: —
 
-- [ ] **T2. Búsqueda en el repository.** RF-1–RF-5, RF-7, RF-8, RF-10, RF-11, RNF-1, RNF-3 · casos 1–7, 10, 12, 14, 15, 17, 21
+- [x] **T2. Búsqueda en el repository.** RF-1–RF-5, RF-7, RF-8, RF-10, RF-11, RNF-1, RNF-3 · casos 1–7, 10, 12, 14, 15, 17, 21
       `src/tracks/escape-like.ts`; `TracksRepository.search(filters)` con QueryBuilder,
       `LEFT JOIN`, parámetros nombrados, orden por mapa fijo + desempate, `offset/limit`,
       `getManyAndCount`.

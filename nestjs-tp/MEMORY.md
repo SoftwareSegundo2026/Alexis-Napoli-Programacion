@@ -8,7 +8,7 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 - TP-5 (`005-calidad`) **en curso**: spec, clarify, plan y tareas aprobados; **cerrado**: T1–T7 y `validate.md` → APROBADO (pusheado).
 - TP-6 (`006-ci`) **en curso**: spec, clarify, plan y tareas aprobados; **cerrado**: validate APROBADO, PR #2 mergeado (`d452504`).
 - TP-3 (`003-busqueda`) **en curso** en la rama `tp-3-busqueda`: spec, clarify, plan y tareas
-  aprobados; T1 cerrada. Siguiente: T2 (repository contra la base real).
+  aprobados; T1–T2 cerradas. Siguiente: T3 (endpoint + contrato en la misma tarea).
 - Tests: `pnpm test` 279 (31 archivos) y `pnpm test:e2e` 380 (17 archivos) en verde; lint sin avisos;
   `pnpm exec tsc --noEmit -p tsconfig.json` también limpio (chequea los tipos de `test/`).
 - Cobertura (unit, todo `src/`): líneas 76,52% (476/622, **146 sin cubrir**) · ramas 80,4%
@@ -132,6 +132,13 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   `Reflect.get`, sin cast); `SearchTracksQueryDto` hereda skip/limit. Parámetro repetido → lista →
   falla su regla de tipo → 400. 41 tests; mutación sin `@IsNotLessThan` → falla su test.
   Cobertura 144/43 sin cubrir (igual).
+- 16/11 · 003-T2: `escapeLike` + `TracksRepository.search` (QueryBuilder, LEFT JOIN, parámetros
+  nombrados, mapa fijo `SORT_COLUMNS`, `offset/limit` + `getManyAndCount`). Test contra copia REAL
+  con ORÁCULO en memoria + `RecordingLogger` (SQL con LIMIT/OFFSET, COUNT aparte, `q` solo en
+  parámetros). El oráculo halló un BUG: `orderBy('track.id' DESC)` + `addOrderBy('track.id' ASC)`
+  → TypeORM indexa el orden por columna y el 2.º pisa al 1.º; desempate solo si sort ≠ trackId.
+  Chinook YA tiene "100% HardCore" (no asumir que una búsqueda solo trae lo sembrado).
+  Cobertura: 135/42 sin cubrir (antes 144/43).
 
 ## Decisiones del plan 002 a recordar en las próximas tareas
 - Guards globales (`APP_GUARD`, autenticación → roles); lo público con `@Public()`.
