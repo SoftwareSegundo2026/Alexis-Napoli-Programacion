@@ -25,6 +25,16 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   inyectables, parámetros de `error` como Nest: `(stack, context)`). `LOG_LEVEL` en `validateEnv`
   (los 6 niveles de Nest; los tests de claves/defaults sumaron `LOG_LEVEL`). oxlint sin problemas
   no imprime nada (exit 0). 453 unit, 495 e2e, cov 82,55% / 85,22%.
+- 16/11 · 007-T2: `request-context.ts` (AsyncLocalStorage; middleware con interfaces mínimas
+  `ContextRequest`/`ContextResponse` → tests sin casts; el `finish` vuelve a entrar al contexto con
+  `storage.run`). Registrado PRIMERO en `configureApp`: el plan suponía que el lector de JSON perdía
+  el contexto, pero la MUTACIÓN (middleware antes del lector) dejó todo verde → el lector lo
+  conserva; el caso 4 lo protege. `main.ts`: `logger: JsonLogger` desde el arranque y
+  `abortOnError: false` (por defecto Nest hace `process.abort()` si falla el arranque y no explica
+  nada); el error se registra como `fatal` y sale con 1. `createTestApp(customize, options)`: por
+  defecto `logger: ['error', 'fatal']`. Verificado con la app compilada (script del scratchpad
+  `probe-app.mjs`, mata SOLO a su hijo): JSON, X-Request-Id, sin query ni token; base inválida →
+  `fatal` "file is not a database" y exit 1. 477 unit, 507 e2e, cov 82,25% / 85,78%.
 - 16/11 · 004 plan: TypeORM 1.1.3 con better-sqlite3 usa UNA conexión (`queryRunner ??=`) y una
   transacción abierta dentro de otra es un SAVEPOINT → `TransactionLock` (FIFO) para reservas.
 - 16/11 · 004-T1: `migrations.ts` (Concert/Reservation/Payment, `IF NOT EXISTS`, índice único

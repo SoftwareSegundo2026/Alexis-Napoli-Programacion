@@ -16,7 +16,7 @@ pushear la rama `tp-7-docker-cd` (nunca `main`) durante T5–T8.
       - `LOG_LEVEL=loud` → error que nombra `LOG_LEVEL`.
       Estimación: 20 min · depende de: —
 
-- [ ] **T2. `requestId` y log por pedido.** RF-12, RF-13 · casos 4, 7, 8, 14, 15
+- [x] **T2. `requestId` y log por pedido.** RF-12, RF-13 · casos 4, 7, 8, 14, 15
       `request-context.ts` (AsyncLocalStorage + middleware) en `configureApp`; `JsonLogger` y
       `bufferLogs` en `main.ts`; `createTestApp` con `logger: ['error', 'fatal']`.
       Hecho cuando: `pnpm test:e2e` pasa `observability.e2e`:

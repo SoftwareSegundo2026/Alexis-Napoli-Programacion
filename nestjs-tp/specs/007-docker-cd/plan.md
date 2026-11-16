@@ -21,10 +21,11 @@ Estado: **aprobado** (16/11, Alexis Napoli; incluye `DEPLOY_KNOWN_HOSTS`) · Spe
 - **Pedidos en curso (`express-adapter.js`):** `close()` hace `httpServer.close()`, que deja de
   aceptar conexiones y **espera** a que terminen los pedidos activos. Solo los corta si se activa
   `forceCloseConnections`, y no lo activamos.
-- **Contexto por pedido:** el lector de JSON termina en callbacks de stream, que pueden perder el
-  `AsyncLocalStorage`. Por eso el middleware de contexto va **después** del lector de JSON y del
-  `deferJsonSyntaxError`: todo lo que hace Nest después queda dentro del contexto del pedido. El
-  test del caso 4 (POST con cuerpo que termina en 500) lo verifica.
+- **Contexto por pedido:** el lector de JSON termina en callbacks de stream, que **podrían** perder
+  el `AsyncLocalStorage`. El plan proponía poner el middleware después del lector por precaución.
+  **Corrección en T2:** una mutación mostró que el lector de esta versión conserva el contexto. El
+  middleware va **primero**, así la duración incluye la lectura del cuerpo. El caso 4 (POST con
+  cuerpo que termina en 500 y cuyo error sale con el `requestId`) lo protege.
 - **Inventario del contrato:** cuenta pares `MÉTODO ruta · estado`. Documentar `/health` con 200 y
   503 exige un caso de contrato para cada uno.
 - **pnpm:** `.modules.yaml` y `.pnpm-workspace-state*.json` guardan fechas. No hacen falta en

@@ -6,6 +6,7 @@ import {
   deferJsonSyntaxError,
 } from './auth/interceptors/body-parse-error.interceptor.js';
 import { DetailExceptionFilter } from './common/filters/detail-exception.filter.js';
+import { createRequestContextMiddleware } from './observability/request-context.js';
 import { BEARER_SCHEME } from './common/swagger/api-docs.decorators.js';
 import { RequestValidationPipe } from './common/validation/request-validation.pipe.js';
 
@@ -26,6 +27,12 @@ export function configureApp<T extends NestExpressApplication>(app: T): T {
   // Lector de JSON registrado antes que el de Nest (que entonces no agrega el
   // suyo) y, justo detrás, el manejador que difiere el error de JSON malformado
   // hasta después de los guards (plan 002, decisión 2).
+  // Spec 007: requestId y log por pedido. Va PRIMERO: la duración incluye la
+  // lectura del cuerpo y todo lo que sigue (lector de JSON, guards, servicios,
+  // filtro de errores) corre dentro del contexto del pedido. Que el lector de
+  // JSON no pierde el contexto lo cubre `observability.e2e` (caso 4: POST con
+  // cuerpo que termina en 500, cuyo error sale con el requestId).
+  app.use(createRequestContextMiddleware());
   app.useBodyParser('json');
   app.use(deferJsonSyntaxError);
 
