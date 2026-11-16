@@ -4,8 +4,8 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 
 ## Estado actual
 - TP-1 (`001-chinook-nest`) **cerrado, validado y pusheado** (`91124e0`).
-- TP-2 (`002-auth-roles`): spec, clarify, plan y tareas aprobados. **T1–T6 hechas**; siguiente: T7.
-- Tests: `pnpm test` 231 (27 archivos) y `pnpm test:e2e` 234 (11 archivos) en verde; lint sin avisos;
+- TP-2 (`002-auth-roles`): spec, clarify, plan y tareas aprobados. **T1–T7 hechas**; siguiente: T8.
+- Tests: `pnpm test` 246 (29 archivos) y `pnpm test:e2e` 246 (12 archivos) en verde; lint sin avisos;
   `pnpm exec tsc --noEmit -p tsconfig.json` también limpio (chequea los tipos de `test/`).
 
 ## Decisiones (y por qué)
@@ -49,6 +49,9 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   (RF-1 la compara exacta; prevalece sobre la regla general de recorte). Altas en cola (promesa
   encadenada). Mutación: sin la cola falla el unit test; el e2e sigue verde porque el índice
   único de la base es la red de seguridad (las dos capas funcionan).
+- 16/11 · 002-T7: `PATCH /users/{id}` (admin). Solo se aplican cambios REALES; si no hay cambio
+  real → 200 sin tocar la base (cubre "reenviar lo propio" y `{}`); cambio real sobre uno mismo
+  → 403. e2e en archivo propio `users-update.e2e-spec.ts` (no en `users.e2e`, para no mezclar estado).
 
 ## Decisiones del plan 002 a recordar en las próximas tareas
 - Guards globales (`APP_GUARD`, autenticación → roles); lo público con `@Public()`.
@@ -71,5 +74,5 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   comprobar el valor y `JSON.stringify`, no `toHaveProperty`.
 
 ## Próximos pasos
-- 002-T7: `PATCH /users/{id}` (admin): `disabled`/`is_admin` de otros; lo propio → 403; casos 3, 13, 14, 18.
+- 002-T8: Swagger con Bearer (reemplaza X-API-Key), docs.e2e migrado (25 operaciones).
 - Pendiente para el TP-4: test de modificaciones concurrentes (observación de `001/validate.md`).

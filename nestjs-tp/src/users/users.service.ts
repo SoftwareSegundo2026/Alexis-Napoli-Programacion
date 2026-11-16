@@ -1,6 +1,12 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
+import { UpdateUserDto } from './dto/update-user.dto.js';
 import { User } from './entities/user.entity.js';
 import { PasswordHasher } from './password-hasher.js';
 import { DuplicateUserError, UsersRepository } from './users.repository.js';
@@ -34,6 +40,34 @@ export class UsersService {
     // La siguiente alta espera a esta, haya salido bien o mal.
     this.creations = creation.catch(() => undefined);
     return creation;
+  }
+
+  /**
+   * Un admin cambia estado y/o rol de un usuario (RF-11). Nadie cambia lo
+   * PROPIO: así el sistema nunca se queda sin el admin que está operando.
+   * Reenviar el valor que ya se tiene no es un cambio.
+   */
+  async update(actor: User, id: number, dto: UpdateUserDto): Promise<User> {
+    const target = await this.users.findById(id);
+    if (target === null) {
+      throw new NotFoundException('User not found');
+    }
+
+    const changes: Partial<Pick<User, 'disabled' | 'isAdmin'>> = {};
+    if (dto.disabled !== undefined && dto.disabled !== target.disabled) {
+      changes.disabled = dto.disabled;
+    }
+    if (dto.is_admin !== undefined && dto.is_admin !== target.isAdmin) {
+      changes.isAdmin = dto.is_admin;
+    }
+
+    if (Object.keys(changes).length === 0) {
+      return target;
+    }
+    if (target.id === actor.id) {
+      throw new ForbiddenException('You cannot change your own role or status');
+    }
+    return this.users.update(id, changes);
   }
 
   private async createNow(dto: CreateUserDto): Promise<User> {

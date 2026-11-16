@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
@@ -6,9 +15,11 @@ import { PaginationQueryDto } from '../common/dto/pagination-query.dto.js';
 import {
   ApiConflict,
   ApiInvalidRequest,
+  ApiNotFound,
   ApiWriteOperation,
 } from '../common/swagger/api-docs.decorators.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
+import { UpdateUserDto } from './dto/update-user.dto.js';
 import { UserResponseDto } from './dto/user-response.dto.js';
 import { User } from './entities/user.entity.js';
 import { UsersService } from './users.service.js';
@@ -48,5 +59,21 @@ export class UsersController {
   @ApiConflict('El username o el email ya están registrados')
   async create(@Body() dto: CreateUserDto): Promise<UserResponseDto> {
     return UserResponseDto.fromEntity(await this.usersService.create(dto));
+  }
+
+  @Patch(':id')
+  @Roles('admin')
+  @ApiWriteOperation()
+  @ApiOkResponse({ type: UserResponseDto })
+  @ApiInvalidRequest()
+  @ApiNotFound()
+  async update(
+    @CurrentUser() actor: User,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateUserDto,
+  ): Promise<UserResponseDto> {
+    return UserResponseDto.fromEntity(
+      await this.usersService.update(actor, id, dto),
+    );
   }
 }

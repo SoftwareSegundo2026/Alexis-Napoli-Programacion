@@ -69,6 +69,15 @@ export class UsersRepository {
     }
   }
 
+  /** Cambia solo estado y/o rol (spec 002 RF-11) y devuelve el usuario releído. */
+  async update(
+    id: number,
+    changes: Partial<Pick<User, 'disabled' | 'isAdmin'>>,
+  ): Promise<User> {
+    await this.users.update({ id }, changes);
+    return this.users.findOneByOrFail({ id });
+  }
+
   private byUsername(username: string) {
     return this.users
       .createQueryBuilder('user')

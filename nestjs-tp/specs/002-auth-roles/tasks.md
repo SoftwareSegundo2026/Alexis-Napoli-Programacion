@@ -53,7 +53,7 @@ Reglas: una tarea por vez, tests primero (en rojo), gates
       pasa `test/users.e2e-spec.ts` en lo de alta/listado/perfil (casos 8, 9, 17, 19, 23).
       Estimación: 30 min · depende de: T5
 
-- [ ] **T7. Modificación de usuarios.** RF-11, RF-4, casos 3, 13, 14, 18
+- [x] **T7. Modificación de usuarios.** RF-11, RF-4, casos 3, 13, 14, 18
       `PATCH /users/{id}` (admin): solo `disabled`/`is_admin`; lo propio → 403; valor propio → 200.
       Hecho cuando: `pnpm test:e2e` pasa la parte de modificación de `users.e2e-spec.ts`,
       incluido "deshabilitar corta el acceso de una credencial vigente" y "quitar el rol → 403
