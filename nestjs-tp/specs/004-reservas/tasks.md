@@ -35,7 +35,7 @@ Reglas: una tarea por vez, tests primero (en rojo), gates en verde (`lint`, `bui
       SQL: 0 reservas y 0 pagos nuevos) y el contrato.
       Estimación: 45 min · depende de: T2, T3
 
-- [ ] **T5. Concurrencia y transacción abierta.** RF-6, RF-7, RF-13, RNF-2 · casos 1, 8, 13, 21
+- [x] **T5. Concurrencia y transacción abierta.** RF-6, RF-7, RF-13, RNF-2 · casos 1, 8, 13, 21
       `reservations-concurrency.e2e` con gateway que cede el turno (`setImmediate`) y con barrera.
       Hecho cuando: los 4 casos pasan sin `sleep`; mutación: sin el candado el test de la última
       entrada o el de muchas reservas falla (se revierte y se documenta).

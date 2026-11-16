@@ -32,6 +32,22 @@ describe('TransactionLock (spec 004, plan)', () => {
     ]);
   });
 
+  it('informa cuántas tareas están corriendo o esperando (pending)', async () => {
+    const lock = new TransactionLock();
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+
+    const first = lock.run(() => gate);
+    const second = lock.run(() => Promise.resolve());
+    expect(lock.pending).toBe(2);
+
+    release();
+    await Promise.all([first, second]);
+    expect(lock.pending).toBe(0);
+  });
+
   it('si una tarea falla, propaga su error y la siguiente igual corre', async () => {
     const lock = new TransactionLock();
 

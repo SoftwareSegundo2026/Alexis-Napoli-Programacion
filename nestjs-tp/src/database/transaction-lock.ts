@@ -16,10 +16,22 @@ import { Injectable } from '@nestjs/common';
 @Injectable()
 export class TransactionLock {
   private tail: Promise<unknown> = Promise.resolve();
+  private count = 0;
+
+  /**
+   * Tareas corriendo o esperando su turno. Lo usan los tests de concurrencia para
+   * saber, sin esperar un tiempo fijo, que un pedido ya está en la cola.
+   */
+  get pending(): number {
+    return this.count;
+  }
 
   /** Corre `task` cuando terminan todas las anteriores; su error no traba a las siguientes. */
   run<T>(task: () => Promise<T>): Promise<T> {
-    const result = this.tail.then(task, task);
+    this.count += 1;
+    const result = this.tail.then(task, task).finally(() => {
+      this.count -= 1;
+    });
     this.tail = result.catch(() => undefined);
     return result;
   }

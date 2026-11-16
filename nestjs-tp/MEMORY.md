@@ -10,7 +10,7 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 - TP-3 (`003-busqueda`) **cerrado**: validate APROBADO; PR #3 mergeado (`dd511e1`), gates verde.
 - TP-4 (`004-reservas`) **en curso** en la rama `tp-4-reservas`: spec y clarify aprobados
   (27 casos límite; RF-14 artista con conciertos → 409; RF-15 = pendiente de concurrencia del TP-1).
-  Plan y tareas aprobados (7 tareas); T1–T4 cerradas. Siguiente: T5 (concurrencia sin sleep).
+  Plan y tareas aprobados (7 tareas); T1–T5 cerradas. Siguiente: T6 (cancelar y completar).
 - 16/11 · 004 plan: TypeORM 1.1.3 con better-sqlite3 usa UNA conexión (`queryRunner ??=`) y una
   transacción abierta dentro de otra es un SAVEPOINT → `TransactionLock` (FIFO) para reservas.
 - 16/11 · 004-T1: `migrations.ts` (Concert/Reservation/Payment, `IF NOT EXISTS`, índice único
@@ -34,6 +34,11 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   `key = nextKey()` por defecto, pasar `undefined` usa el default → usar `null`. Dobles en
   `test/helpers/reservations-doubles.ts` (`ControllablePaymentGateway`, `FakeClock`, `withDoubles`)
   y `createTestApp(customize)`; el contrato usa el doble para el 402. protection/docs → 32 ops.
+- 16/11 · 004-T5: `reservations-concurrency.e2e` SIN sleep: barrera en el pago + `until(cond)` que
+  cede el turno (setImmediate) hasta que A está cobrando y B está en el candado
+  (`TransactionLock.pending`, nuevo) o cobrando. MUTACIÓN sin candado: caso 13 vendió 12 de 5
+  (sobreventa), caso 1 dio [201, 500] (SAVEPOINT anidado), caso 21 falló; caso 8 pasa igual
+  (lo protege que PENDING no cuenta, no el candado).
 - Tests: `pnpm test` 360 y `pnpm test:e2e` 413 en verde (rama `tp-3-busqueda`).
 - Tests: `pnpm test` 279 (31 archivos) y `pnpm test:e2e` 380 (17 archivos) en verde; lint sin avisos;
   `pnpm exec tsc --noEmit -p tsconfig.json` también limpio (chequea los tipos de `test/`).
