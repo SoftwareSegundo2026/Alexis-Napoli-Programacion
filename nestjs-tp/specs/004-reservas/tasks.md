@@ -28,7 +28,7 @@ Reglas: una tarea por vez, tests primero (en rojo), gates en verde (`lint`, `bui
       → `ConflictException`, incluida `PAID → PENDING`) y el gateway simulado aprueba.
       Estimación: 15 min · depende de: —
 
-- [ ] **T4. Reserva atómica y consultas.** RF-3–RF-6, RF-8, RF-12, RNF-1, RNF-5 · casos 2, 3, 5, 6, 9–12, 14, 18–20, 22, 25
+- [x] **T4. Reserva atómica y consultas.** RF-3–RF-6, RF-8, RF-12, RNF-1, RNF-5 · casos 2, 3, 5, 6, 9–12, 14, 18–20, 22, 25
       Entities, DTO de alta (+ header `Idempotency-Key`), repository, service (candado +
       transacción), controller (`POST`, `GET` lista, `GET` detalle); contrato e inventario.
       Hecho cuando: `pnpm test:e2e` pasa `reservations.e2e` con esos casos (rollback verificado por

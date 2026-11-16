@@ -11,6 +11,8 @@ export interface ContractContext {
   asViewer(test: request.Test): request.Test;
   /** Crea un recurso PROPIO del caso (para modificar o borrar sin depender de otros) y devuelve su id. */
   create(base: string, body: object): Promise<number>;
+  /** Hace que el medio de pago de prueba rechace (`reject`) o apruebe los cobros (spec 004). */
+  setPaymentMode(mode: 'approve' | 'reject'): void;
 }
 
 /**

@@ -30,7 +30,13 @@ const PUBLIC_OPERATIONS = new Set([
 ]);
 
 /** Las únicas protegidas que NO exigen admin: el propio perfil (RF-7). */
-const ANY_ROLE_OPERATIONS = new Set(['GET /api/v1/users/me']);
+const ANY_ROLE_OPERATIONS = new Set([
+  'GET /api/v1/users/me',
+  // Spec 004: cualquier usuario autenticado reserva y consulta LO SUYO.
+  'POST /api/v1/reservations',
+  'GET /api/v1/reservations',
+  'GET /api/v1/reservations/{id}',
+]);
 
 interface Operation {
   key: string;
@@ -78,9 +84,9 @@ describe('Regresión: ninguna operación queda sin proteger (e2e)', () => {
     request(app.getHttpServer())[operation.method](operation.path);
 
   // 25 hasta el TP-2; 26 desde la spec 003 (GET /tracks/search); 29 desde la
-  // spec 004 (3 de conciertos).
-  it('el inventario es la API completa (29 operaciones)', () => {
-    expect(operations).toHaveLength(29);
+  // spec 004 (3 de conciertos); 32 con las 3 de reservas (004-T4).
+  it('el inventario es la API completa (32 operaciones)', () => {
+    expect(operations).toHaveLength(32);
   });
 
   it('toda operación NO pública responde 401 sin credencial', async () => {

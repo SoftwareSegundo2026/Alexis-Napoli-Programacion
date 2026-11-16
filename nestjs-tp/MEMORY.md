@@ -10,7 +10,7 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 - TP-3 (`003-busqueda`) **cerrado**: validate APROBADO; PR #3 mergeado (`dd511e1`), gates verde.
 - TP-4 (`004-reservas`) **en curso** en la rama `tp-4-reservas`: spec y clarify aprobados
   (27 casos límite; RF-14 artista con conciertos → 409; RF-15 = pendiente de concurrencia del TP-1).
-  Plan y tareas aprobados (7 tareas); T1–T3 cerradas. Siguiente: T4 (reserva atómica).
+  Plan y tareas aprobados (7 tareas); T1–T4 cerradas. Siguiente: T5 (concurrencia sin sleep).
 - 16/11 · 004 plan: TypeORM 1.1.3 con better-sqlite3 usa UNA conexión (`queryRunner ??=`) y una
   transacción abierta dentro de otra es un SAVEPOINT → `TransactionLock` (FIFO) para reservas.
 - 16/11 · 004-T1: `migrations.ts` (Concert/Reservation/Payment, `IF NOT EXISTS`, índice único
@@ -27,6 +27,13 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   nombra los estados; test con los 16 pares) y `payment-gateway.ts` (interfaz, token
   `PAYMENT_GATEWAY`, `PaymentRejectedError`, simulado que aprueba). typecheck atrapó `charge()` sin
   parámetro en el simulado.
+- 16/11 · 004-T4: módulo `reservations` (alta = `lock.run(() => dataSource.transaction(...))`:
+  clave previa → misma reserva o 409; concierto 404; empezado 400; cupo 409; INSERT PENDING →
+  `gateway.charge` (rechazo → 402) → pago APPROVED → PAID). `@IdempotencyKey()` es decorador de
+  parámetro: `@Headers()` de Nest NO acepta pipes (se ignoraba en silencio). Test helper: con
+  `key = nextKey()` por defecto, pasar `undefined` usa el default → usar `null`. Dobles en
+  `test/helpers/reservations-doubles.ts` (`ControllablePaymentGateway`, `FakeClock`, `withDoubles`)
+  y `createTestApp(customize)`; el contrato usa el doble para el 402. protection/docs → 32 ops.
 - Tests: `pnpm test` 360 y `pnpm test:e2e` 413 en verde (rama `tp-3-busqueda`).
 - Tests: `pnpm test` 279 (31 archivos) y `pnpm test:e2e` 380 (17 archivos) en verde; lint sin avisos;
   `pnpm exec tsc --noEmit -p tsconfig.json` también limpio (chequea los tipos de `test/`).
