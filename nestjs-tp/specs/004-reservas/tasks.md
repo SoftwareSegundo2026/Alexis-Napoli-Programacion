@@ -52,7 +52,7 @@ Reglas: una tarea por vez, tests primero (en rojo), gates en verde (`lint`, `bui
       entero con uno de los dos.
       Estimación: 10 min · depende de: —
 
-- [ ] **T8. Valores numéricos como parámetros (hallazgo de la validación).** RNF-5
+- [x] **T8. Valores numéricos como parámetros (hallazgo de la validación).** RNF-5
       La validación encontró que las búsquedas y actualizaciones por id de reservas y pagos
       (`findOneBy`, `update`) dejan los números escritos como literal en el SQL: el driver de
       SQLite de TypeORM inlinea todo parámetro `number` (mismo hallazgo que el TP-3). Se pasan a

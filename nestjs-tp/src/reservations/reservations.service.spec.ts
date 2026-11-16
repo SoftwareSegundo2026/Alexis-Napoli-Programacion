@@ -8,7 +8,7 @@ import { randomUUID } from 'node:crypto';
 import { copyFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { DataSource } from 'typeorm';
+import { DataSource, type Logger } from 'typeorm';
 import { Artist } from '../artists/entities/artist.entity.js';
 import { ConcertsRepository } from '../concerts/concerts.repository.js';
 import { Concert } from '../concerts/entities/concert.entity.js';
@@ -44,6 +44,19 @@ class TestGateway implements PaymentGateway {
   }
 }
 
+/** Guarda el SQL que ejecuta TypeORM, para verificar RNF-5. */
+class RecordingLogger implements Logger {
+  readonly queries: string[] = [];
+  logQuery(sql: string): void {
+    this.queries.push(sql);
+  }
+  logQueryError(): void {}
+  logQuerySlow(): void {}
+  logSchemaBuild(): void {}
+  logMigration(): void {}
+  log(): void {}
+}
+
 class TestClock extends Clock {
   current = new Date('2030-01-01T00:00:00Z');
   override now(): Date {
@@ -59,6 +72,7 @@ describe('ReservationsService (contra una copia de la base)', () => {
   const databasePath = join(tmpdir(), `reservations-${randomUUID()}.db`);
   const gateway = new TestGateway();
   const clock = new TestClock();
+  const logger = new RecordingLogger();
   let dataSource: DataSource;
   let service: ReservationsService;
   let concerts: ConcertsRepository;
@@ -75,6 +89,8 @@ describe('ReservationsService (contra una copia de la base)', () => {
       database: databasePath,
       entities: [Concert, Artist, Reservation, Payment],
       prepareDatabase: prepareConnection,
+      logging: true,
+      logger,
     });
     await dataSource.initialize();
     concerts = new ConcertsRepository(dataSource.getRepository(Concert));
@@ -337,5 +353,42 @@ describe('ReservationsService (contra una copia de la base)', () => {
         'Invalid status transition: COMPLETED → CANCELLED',
       );
     });
+  });
+
+  // Spec 004 RNF-5 (como la 003 RNF-3): ningún valor viaja como literal en el
+  // SQL. El driver de SQLite de TypeORM inlinea todo parámetro `number`; este
+  // test lo detecta en el flujo completo de reservas.
+  it('ninguna condición del SQL compara contra un número literal (RNF-5, T8)', async () => {
+    const reservation = await service.create(
+      owner,
+      { ConcertId: await newConcert(5), Quantity: 1 },
+      nextKey(),
+    );
+    logger.queries.length = 0;
+
+    await service.create(
+      owner,
+      { ConcertId: reservation.concertId, Quantity: 1 },
+      nextKey(),
+    );
+    await service.findOne(owner, reservation.id);
+    await service.findAll(owner, { skip: 0, limit: 10 });
+    await service.cancel(owner, reservation.id);
+    const other = await service.create(
+      owner,
+      { ConcertId: reservation.concertId, Quantity: 1 },
+      nextKey(),
+    );
+    clock.current = new Date('2031-01-02T00:00:00Z');
+    await service.complete(other.id);
+
+    const literal = /(=|<>|>=|<=|<|>)\s*-?\d/;
+    const offending = logger.queries
+      .filter((sql) => /^(SELECT|UPDATE|DELETE)/.test(sql))
+      // LIMIT/OFFSET los escribe el QueryBuilder (aceptado en la spec 003).
+      .map((sql) => sql.replace(/\b(LIMIT|OFFSET) \d+/g, ''))
+      .filter((sql) => literal.test(sql));
+
+    expect(offending).toEqual([]);
   });
 });

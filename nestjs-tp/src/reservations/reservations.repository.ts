@@ -22,6 +22,10 @@ export class ReservationsRepository {
     private readonly reservations: Repository<Reservation>,
   ) {}
 
+  // Spec 004 RNF-5 (como la 003 RNF-3): el driver de SQLite de TypeORM escribe
+  // como LITERAL todo parámetro `number` (`findOneBy({ id })` → `"Id" = 5`). Por
+  // eso los ids van como texto con `CAST(? AS INTEGER)`: así viajan como `?`.
+
   findByKey(
     manager: EntityManager,
     userId: number,
@@ -29,7 +33,14 @@ export class ReservationsRepository {
   ): Promise<Reservation | null> {
     return manager
       .getRepository(Reservation)
-      .findOneBy({ userId, idempotencyKey });
+      .createQueryBuilder('reservation')
+      .where('reservation.userId = CAST(:userId AS INTEGER)', {
+        userId: String(userId),
+      })
+      .andWhere('reservation.idempotencyKey = :idempotencyKey', {
+        idempotencyKey,
+      })
+      .getOne();
   }
 
   insert(manager: EntityManager, data: NewReservation): Promise<Reservation> {
@@ -42,7 +53,12 @@ export class ReservationsRepository {
     id: number,
     status: ReservationStatus,
   ): Promise<void> {
-    await manager.getRepository(Reservation).update({ id }, { status });
+    await manager
+      .createQueryBuilder()
+      .update(Reservation)
+      .set({ status })
+      .where('"ReservationId" = CAST(:id AS INTEGER)', { id: String(id) })
+      .execute();
   }
 
   async insertPayment(manager: EntityManager, data: NewPayment): Promise<void> {
@@ -55,8 +71,13 @@ export class ReservationsRepository {
     reservationId: number,
   ): Promise<void> {
     await manager
-      .getRepository(Payment)
-      .update({ reservationId }, { status: 'REFUNDED' });
+      .createQueryBuilder()
+      .update(Payment)
+      .set({ status: 'REFUNDED' })
+      .where('"ReservationId" = CAST(:reservationId AS INTEGER)', {
+        reservationId: String(reservationId),
+      })
+      .execute();
   }
 
   /** Una reserva; `ownerId` restringe a las del usuario (null = admin: cualquiera). */
@@ -66,9 +87,15 @@ export class ReservationsRepository {
     manager?: EntityManager,
   ): Promise<Reservation | null> {
     const repository = manager?.getRepository(Reservation) ?? this.reservations;
-    return repository.findOneBy(
-      ownerId === null ? { id } : { id, userId: ownerId },
-    );
+    const query = repository
+      .createQueryBuilder('reservation')
+      .where('reservation.id = CAST(:id AS INTEGER)', { id: String(id) });
+    if (ownerId !== null) {
+      query.andWhere('reservation.userId = CAST(:ownerId AS INTEGER)', {
+        ownerId: String(ownerId),
+      });
+    }
+    return query.getOne();
   }
 
   /** Página de reservas por id; `ownerId` null = todas (admin). */
@@ -77,11 +104,17 @@ export class ReservationsRepository {
     skip: number,
     limit: number,
   ): Promise<Reservation[]> {
-    return this.reservations.find({
-      where: ownerId === null ? {} : { userId: ownerId },
-      order: { id: 'ASC' },
-      skip,
-      take: limit,
-    });
+    const query = this.reservations.createQueryBuilder('reservation');
+    if (ownerId !== null) {
+      query.where('reservation.userId = CAST(:ownerId AS INTEGER)', {
+        ownerId: String(ownerId),
+      });
+    }
+    // LIMIT/OFFSET los escribe el QueryBuilder (enteros validados, spec 003).
+    return query
+      .orderBy('reservation.id', 'ASC')
+      .offset(skip)
+      .limit(limit)
+      .getMany();
   }
 }
