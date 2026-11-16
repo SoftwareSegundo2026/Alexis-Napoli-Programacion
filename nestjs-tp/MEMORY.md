@@ -8,7 +8,7 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 - TP-5 (`005-calidad`) **en curso**: spec, clarify, plan y tareas aprobados; **cerrado**: T1–T7 y `validate.md` → APROBADO (pusheado).
 - TP-6 (`006-ci`) **en curso**: spec, clarify, plan y tareas aprobados; **cerrado**: validate APROBADO, PR #2 mergeado (`d452504`).
 - TP-3 (`003-busqueda`) **en curso** en la rama `tp-3-busqueda`: spec, clarify, plan y tareas
-  aprobados; T1–T2 cerradas. Siguiente: T3 (endpoint + contrato en la misma tarea).
+  aprobados; T1–T3 cerradas. Siguiente: T4 (21 casos e2e + docs de parámetros).
 - Tests: `pnpm test` 279 (31 archivos) y `pnpm test:e2e` 380 (17 archivos) en verde; lint sin avisos;
   `pnpm exec tsc --noEmit -p tsconfig.json` también limpio (chequea los tipos de `test/`).
 - Cobertura (unit, todo `src/`): líneas 76,52% (476/622, **146 sin cubrir**) · ramas 80,4%
@@ -139,6 +139,13 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   → TypeORM indexa el orden por columna y el 2.º pisa al 1.º; desempate solo si sort ≠ trackId.
   Chinook YA tiene "100% HardCore" (no asumir que una búsqueda solo trae lo sembrado).
   Cobertura: 135/42 sin cubrir (antes 144/43).
+- 16/11 · 003-T3: `TracksService.search` (→ `toPage`), `@Get('search')` ANTES de `:id` (en rojo,
+  "search" caía en `:id` → 400), `TrackSearchPageDto` (Swagger no documenta genéricos), forma
+  `page` en `shapes.ts` + 2 casos de contrato. **Tests viejos ACTUALIZADOS (no borrados ni
+  debilitados)** porque fijaban la cantidad de operaciones: `protection.e2e` (+`GET
+  /tracks/search` en PUBLIC_OPERATIONS, que exige cambio de spec: lo es la 003; 25 → 26) y
+  `docs.e2e` (catálogo 20 → 21, total 25 → 26). Cobertura 143/42 (+8 líneas: controller sin
+  unit test, cubierto por e2e); 78,56% ≥ 75.
 
 ## Decisiones del plan 002 a recordar en las próximas tareas
 - Guards globales (`APP_GUARD`, autenticación → roles); lo público con `@Public()`.

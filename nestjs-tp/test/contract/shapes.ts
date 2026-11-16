@@ -16,6 +16,8 @@ export type Shape = Readonly<Record<string, readonly FieldType[]>>;
 export type ExpectedBody =
   | { readonly kind: 'object'; readonly shape: Shape }
   | { readonly kind: 'list'; readonly shape: Shape }
+  /** Página con metadatos (spec 003 RF-6): `{ items: [<shape>], total, skip, limit, hasMore }`. */
+  | { readonly kind: 'page'; readonly shape: Shape }
   | { readonly kind: 'empty' }
   | { readonly kind: 'text' };
 
@@ -77,6 +79,16 @@ export const object = (shape: Shape): ExpectedBody => ({
   shape,
 });
 export const list = (shape: Shape): ExpectedBody => ({ kind: 'list', shape });
+export const page = (shape: Shape): ExpectedBody => ({ kind: 'page', shape });
+
+/** Metadatos de toda página (spec 003 RF-6, RNF-6); `items` se verifica aparte. */
+const PAGE_ENVELOPE: Readonly<Record<string, readonly string[]>> = {
+  items: ['array'],
+  total: ['number'],
+  skip: ['number'],
+  limit: ['number'],
+  hasMore: ['boolean'],
+};
 export const EMPTY: ExpectedBody = { kind: 'empty' };
 export const TEXT: ExpectedBody = { kind: 'text' };
 export const ERROR_BODY: ExpectedBody = object(ERROR);
@@ -93,8 +105,24 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return jsonType(value) === 'object';
 }
 
+/** Una lista CON elementos, cada uno con la forma dada (vacía no permite verificarla). */
+function checkList(value: unknown, shape: Shape, where: string): string[] {
+  if (!Array.isArray(value) || value.length === 0) {
+    return [
+      `${where}: se esperaba una lista con elementos (${jsonType(value)})`,
+    ];
+  }
+  return value.flatMap((item: unknown, index) =>
+    checkShape(item, shape, `${where}[${index}]`),
+  );
+}
+
 /** Problemas de un valor frente a una forma (vacío = coincide). */
-function checkShape(value: unknown, shape: Shape, where: string): string[] {
+function checkShape(
+  value: unknown,
+  shape: Readonly<Record<string, readonly string[]>>,
+  where: string,
+): string[] {
   if (!isRecord(value)) {
     return [`${where}: se esperaba un objeto y llegó ${jsonType(value)}`];
   }
@@ -151,23 +179,22 @@ export function checkResponse(
       break;
     case 'object':
     case 'list':
+    case 'page':
       if (!contentType.startsWith('application/json')) {
         problems.push(`cuerpo: se esperaba JSON y llegó ${contentType}`);
         break;
       }
       if (expected.kind === 'object') {
         problems.push(...checkShape(body, expected.shape, 'cuerpo'));
-      } else if (!Array.isArray(body) || body.length === 0) {
-        // Una lista vacía no permitiría comprobar la forma de sus elementos.
-        problems.push(
-          `cuerpo: se esperaba una lista con elementos (${jsonType(body)})`,
-        );
+      } else if (expected.kind === 'list') {
+        problems.push(...checkList(body, expected.shape, 'cuerpo'));
       } else {
-        body.forEach((item: unknown, index) =>
+        problems.push(...checkShape(body, PAGE_ENVELOPE, 'cuerpo'));
+        if (isRecord(body)) {
           problems.push(
-            ...checkShape(item, expected.shape, `cuerpo[${index}]`),
-          ),
-        );
+            ...checkList(body.items, expected.shape, 'cuerpo.items'),
+          );
+        }
       }
       break;
   }

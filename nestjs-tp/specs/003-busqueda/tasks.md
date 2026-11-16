@@ -27,7 +27,7 @@ Después, **PARA**. Push de la rama con OK del usuario; entra a `main` por PR (s
       texto de `q` solo en los parámetros).
       Estimación: 45 min · depende de: T1
 
-- [ ] **T3. Endpoint `GET /tracks/search` y su contrato.** RF-6, RF-12 (Swagger), RNF-4, RNF-6
+- [x] **T3. Endpoint `GET /tracks/search` y su contrato.** RF-6, RF-12 (Swagger), RNF-4, RNF-6
       `TracksService.search` (arma la página con `toPage`); ruta `search` antes de `:id`, pública,
       con `TrackSearchPageDto` y los parámetros documentados; `shapes.ts` con la forma `page`;
       casos de contrato 200 y 400.

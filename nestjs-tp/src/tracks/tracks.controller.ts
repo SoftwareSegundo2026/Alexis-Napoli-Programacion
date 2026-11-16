@@ -15,6 +15,7 @@ import {
   ApiCreatedResponse,
   ApiNoContentResponse,
   ApiOkResponse,
+  ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
 import { Public } from '../auth/decorators/public.decorator.js';
@@ -27,7 +28,9 @@ import {
   ApiAdminOnly,
 } from '../common/swagger/api-docs.decorators.js';
 import { CreateTrackDto } from './dto/create-track.dto.js';
+import { SearchTracksQueryDto } from './dto/search-tracks-query.dto.js';
 import { TrackResponseDto } from './dto/track-response.dto.js';
+import { TrackSearchPageDto } from './dto/track-search-page.dto.js';
 import { UpdateTrackDto } from './dto/update-track.dto.js';
 import { TracksService } from './tracks.service.js';
 
@@ -46,6 +49,27 @@ export class TracksController {
   ): Promise<TrackResponseDto[]> {
     const tracks = await this.tracksService.findAll(query);
     return tracks.map((track) => TrackResponseDto.fromEntity(track));
+  }
+
+  // DEBE ir antes de @Get(':id'): si no, Nest toma "search" como un id y
+  // ParseIntPipe responde 400 (spec 003, plan).
+  @Get('search')
+  @Public()
+  @ApiOperation({
+    summary: 'Buscar pistas con filtros combinados, orden y paginación',
+    description:
+      'Todos los filtros son opcionales y se combinan con Y. Sin filtros devuelve todas las pistas, paginadas. Un filtro sin coincidencias responde 200 con items vacío.',
+  })
+  @ApiOkResponse({ type: TrackSearchPageDto })
+  @ApiInvalidRequest()
+  async search(
+    @Query() query: SearchTracksQueryDto,
+  ): Promise<TrackSearchPageDto> {
+    const page = await this.tracksService.search(query);
+    return {
+      ...page,
+      items: page.items.map((track) => TrackResponseDto.fromEntity(track)),
+    };
   }
 
   @Get(':id')
