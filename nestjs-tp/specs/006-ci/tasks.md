@@ -24,7 +24,7 @@ T1–T2 van a `main` (antes de la regla); T3–T4 y el cierre, por rama + PR (RF
       y "Set up job" muestra `Contents: read` (caso 9).
       Estimación: 25 min · depende de: T1
 
-- [ ] **T3. Protección de `main` y PR rojo de evidencia.** RF-5, RF-9 · casos 1, 4, 8
+- [x] **T3. Protección de `main` y PR rojo de evidencia.** RF-5, RF-9 · casos 1, 4, 8
       Usuario (con guía): regla en `main` con "Require status checks" → `gates`, y "Do not
       allow bypassing the above settings". Claude: rama `tp-6-evidencia-rojo` con un test
       roto a propósito, push (con OK). Usuario: abre el PR, captura "Merging is blocked" y lo

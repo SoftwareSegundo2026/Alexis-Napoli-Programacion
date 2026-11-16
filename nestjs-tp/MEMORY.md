@@ -6,7 +6,7 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 - TP-1 (`001-chinook-nest`) **cerrado, validado y pusheado** (`91124e0`).
 - TP-2 (`002-auth-roles`) **cerrado**: T1–T9 y `validate.md` → APROBADO.
 - TP-5 (`005-calidad`) **en curso**: spec, clarify, plan y tareas aprobados; **cerrado**: T1–T7 y `validate.md` → APROBADO (pusheado).
-- TP-6 (`006-ci`) **en curso**: spec, clarify, plan y tareas aprobados; T1–T2 cerradas. Siguiente: T3.
+- TP-6 (`006-ci`) **en curso**: spec, clarify, plan y tareas aprobados; T1–T3 cerradas. Siguiente: T4 (rama `tp-6-ci`).
 - Tests: `pnpm test` 279 (31 archivos) y `pnpm test:e2e` 380 (17 archivos) en verde; lint sin avisos;
   `pnpm exec tsc --noEmit -p tsconfig.json` también limpio (chequea los tipos de `test/`).
 - Cobertura (unit, todo `src/`): líneas 76,52% (476/622, **146 sin cubrir**) · ramas 80,4%
@@ -112,7 +112,14 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   (65 MB, último uso 14:26; guardado 5 s → 0 s). Permisos del token: `Contents: read`, `Metadata:
   read` (captura `docs/evidencias/006-permisos-token.png`). Sin parser YAML local: la validación es
   la corrida. Logs de Actions vía API exigen admin; estado, pasos, caches y artefactos no.
-- **Desde que `main` quede protegida (TP-6 T3): todo por RAMA + PR** (spec 006 RF-9).
+- 16/11 · 006-T3: regla clásica en `main` (PR obligatorio sin aprobaciones, `gates` requerido, "Do
+  not allow bypassing"); API de la rama: `protected: true`, `contexts: [gates]`, `enforcement_level:
+  everyone`. **PR #1** (rama `tp-6-evidencia-rojo`, test intencional `1 + 1 = 3`): corrida
+  43891474309 → Lint/Build ✅, Unit tests ❌, E2E/Cobertura/Typecheck/artefacto skipped; botón de
+  merge deshabilitado siendo admin; PR cerrado sin mergear. La UI nueva ya no escribe "Merging is
+  blocked" (botón gris = bloqueo). La API sin token da `mergeable_state: unstable` (no evalúa la
+  regla): NO usarla como prueba. Capturas: `docs/evidencias/006-*.png`.
+- **`main` está protegida: TODO entra por RAMA + PR que mergea el usuario** (spec 006 RF-9).
 
 ## Decisiones del plan 002 a recordar en las próximas tareas
 - Guards globales (`APP_GUARD`, autenticación → roles); lo público con `@Public()`.
