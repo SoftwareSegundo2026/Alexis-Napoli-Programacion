@@ -43,7 +43,7 @@ sin `[x]`) y `005-Tn` (el arreglo, sin tocar esos tests; con `[x]`) — RNF-4.
       verde; con la mutación, falla.
       Estimación: 35 min · depende de: T2
 
-- [ ] **T4. Bug 1: `skip` enorme → 500.** RF-6 · casos 7, 8, 17
+- [x] **T4. Bug 1: `skip` enorme → 500.** RF-6 · casos 7, 8, 17
       Rojo: `pagination-query.dto.spec.ts` (skip de 20 y de 400 dígitos se aceptan; `limit`
       enorme sigue → 400) y e2e de los 5 listados con `?skip=99999999999999999999` → 200 `[]`.
       Arreglo: `toStrictInteger` topa en `Number.MAX_SAFE_INTEGER`.
