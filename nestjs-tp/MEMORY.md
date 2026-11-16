@@ -5,8 +5,8 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 ## Estado actual
 - TP-1 (`001-chinook-nest`) **cerrado, validado y pusheado** (`91124e0`).
 - TP-2 (`002-auth-roles`) **cerrado**: T1–T9 y `validate.md` → APROBADO.
-- TP-5 (`005-calidad`) **en curso**: spec, clarify, plan y tareas aprobados; T1–T5 cerradas. Siguiente: T6 (bug 3, dos commits).
-- Tests: `pnpm test` 257 (30 archivos) y `pnpm test:e2e` 375 (16 archivos) en verde; lint sin avisos;
+- TP-5 (`005-calidad`) **en curso**: spec, clarify, plan y tareas aprobados; T1–T6 cerradas. Siguiente: T7 (refactor del PATCH).
+- Tests: `pnpm test` 279 (31 archivos) y `pnpm test:e2e` 380 (17 archivos) en verde; lint sin avisos;
   `pnpm exec tsc --noEmit -p tsconfig.json` también limpio (chequea los tipos de `test/`).
 - Cobertura (unit, todo `src/`): líneas 76,52% (476/622, **146 sin cubrir**) · ramas 80,4%
   (201/250, **49 sin cubrir**). Umbral 75/75. Ninguna tarea del TP-5 puede subir lo sin cubrir.
@@ -90,6 +90,13 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   OJO al escribir rojos de este bug: la letra no ASCII tiene que CAMBIAR de caja ("Émile"/"ÉMILE" no
   sirve) y cada test necesita nombres propios (un duplicado creado por el bug hace pasar a otro test).
   `NOTHING` es palabra reservada de SQLite. Verificado con la app real. Cobertura: 146/49 (igual).
+- 16/11 · 005-T6 **BUG 3** (rojo `900e74d` → arreglo `005-T6`). Síntoma: `ImageUrl`/`Composer`/
+  `full_name` = `"   "` o `""` se guardaban `""`. Causa: `@Trim()` deja `""` y `@IsOptional()` solo
+  omite `null`/`undefined`. Arreglo: `@TrimToNull()` (recorta; vacío → `null`) en los 7 opcionales
+  de texto; los obligatorios siguen con `@Trim()` (`""` → 400). Rojo: 14 unit (7 campos × 2 valores)
+  + 4 e2e que releen lo guardado. Cobertura: 146/49 (igual).
+- `git checkout` de un archivo deja CRLF y Prettier lo marca; su contenido es igual al del repo.
+  No commitearlo "arreglado": restaurarlo con `git checkout` y dejarlo afuera.
 
 ## Decisiones del plan 002 a recordar en las próximas tareas
 - Guards globales (`APP_GUARD`, autenticación → roles); lo público con `@Public()`.
@@ -114,5 +121,5 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   comprobar el valor y `JSON.stringify`, no `toHaveProperty`.
 
 ## Próximos pasos
-- TP-5: T6 (bug 3: opcional vacío → null) según `specs/005-calidad/tasks.md`.
+- TP-5: T7 (refactor del PATCH; el commit NO toca tests) según `specs/005-calidad/tasks.md`.
 - Pendiente para el TP-4: test de modificaciones concurrentes (observación de `001/validate.md`).

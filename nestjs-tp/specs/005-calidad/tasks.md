@@ -64,7 +64,7 @@ sin `[x]`) y `005-Tn` (el arreglo, sin tocar esos tests; con `[x]`) — RNF-4.
       y la app real responde 409 a `CANCIÓN ÑANDÚ` tras `Canción Ñandú`.
       Estimación: 35 min · depende de: T4
 
-- [ ] **T6. Bug 3: opcional vacío o de espacios → `null`.** RF-8 · casos 12–15
+- [x] **T6. Bug 3: opcional vacío o de espacios → `null`.** RF-8 · casos 12–15
       Rojo: tests de DTO vía `RequestValidationPipe` (`ImageUrl` de artista y álbum, `Composer`,
       `full_name` con `""` y `"   "` → `null`; `Name` con espacios sigue → 400) y e2e de alta
       de artista y `PATCH` de pista.

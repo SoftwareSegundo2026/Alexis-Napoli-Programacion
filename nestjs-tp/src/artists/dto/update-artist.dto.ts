@@ -1,6 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 import { IfPresent } from '../../common/validation/if-present.decorator.js';
+import { TrimToNull } from '../../common/validation/trim-to-null.decorator.js';
 import { Trim } from '../../common/validation/trim.decorator.js';
 
 /** Cuerpo de `PATCH /artists/{id}` (RF-7, RF-9). */
@@ -22,7 +23,7 @@ export class UpdateArtistDto {
     description: 'null quita la imagen',
   })
   @IsOptional()
-  @Trim()
+  @TrimToNull()
   @IsString()
   @MaxLength(500)
   ImageUrl?: string | null;

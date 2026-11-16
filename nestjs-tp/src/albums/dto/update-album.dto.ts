@@ -7,6 +7,7 @@ import {
   MaxLength,
 } from 'class-validator';
 import { IfPresent } from '../../common/validation/if-present.decorator.js';
+import { TrimToNull } from '../../common/validation/trim-to-null.decorator.js';
 import { Trim } from '../../common/validation/trim.decorator.js';
 
 /**
@@ -38,7 +39,7 @@ export class UpdateAlbumDto {
     description: 'null quita la imagen',
   })
   @IsOptional()
-  @Trim()
+  @TrimToNull()
   @IsString()
   @MaxLength(500)
   ImageUrl?: string | null;

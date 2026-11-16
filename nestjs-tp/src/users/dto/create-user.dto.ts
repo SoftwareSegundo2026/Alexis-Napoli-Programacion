@@ -8,6 +8,7 @@ import {
   Matches,
   MaxLength,
 } from 'class-validator';
+import { TrimToNull } from '../../common/validation/trim-to-null.decorator.js';
 import { Trim } from '../../common/validation/trim.decorator.js';
 
 /**
@@ -41,7 +42,7 @@ export class CreateUserDto {
 
   @ApiPropertyOptional({ type: String, nullable: true, maxLength: 120 })
   @IsOptional()
-  @Trim()
+  @TrimToNull()
   @IsString()
   @MaxLength(120)
   full_name?: string | null;

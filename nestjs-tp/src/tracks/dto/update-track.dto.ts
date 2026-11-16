@@ -9,6 +9,7 @@ import {
   Min,
 } from 'class-validator';
 import { IfPresent } from '../../common/validation/if-present.decorator.js';
+import { TrimToNull } from '../../common/validation/trim-to-null.decorator.js';
 import { Trim } from '../../common/validation/trim.decorator.js';
 
 /**
@@ -52,7 +53,7 @@ export class UpdateTrackDto {
 
   @ApiPropertyOptional({ type: String, nullable: true, maxLength: 220 })
   @IsOptional()
-  @Trim()
+  @TrimToNull()
   @IsString()
   @MaxLength(220)
   Composer?: string | null;

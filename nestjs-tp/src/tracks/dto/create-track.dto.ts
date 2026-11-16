@@ -8,6 +8,7 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
+import { TrimToNull } from '../../common/validation/trim-to-null.decorator.js';
 import { Trim } from '../../common/validation/trim.decorator.js';
 
 /**
@@ -46,7 +47,7 @@ export class CreateTrackDto {
 
   @ApiPropertyOptional({ type: String, nullable: true, maxLength: 220 })
   @IsOptional()
-  @Trim()
+  @TrimToNull()
   @IsString()
   @MaxLength(220)
   Composer?: string | null;
