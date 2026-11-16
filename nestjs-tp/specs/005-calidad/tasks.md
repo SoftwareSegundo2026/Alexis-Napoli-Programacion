@@ -52,7 +52,7 @@ sin `[x]`) y `005-Tn` (el arreglo, sin tocar esos tests; con `[x]`) — RNF-4.
       en esos tests.
       Estimación: 25 min · depende de: T3
 
-- [ ] **T5. Bug 2: duplicados con mayúsculas no ASCII.** RF-7 · casos 9, 10, 11, 19
+- [x] **T5. Bug 2: duplicados con mayúsculas no ASCII.** RF-7 · casos 9, 10, 11, 19
       Rojo: e2e de artistas y géneros (`CANCIÓN ÑANDÚ` / `canción ñandú` / `BJÖRK PRUEBA` →
       409 en alta y modificación; `Cancion` frente a `Canción` → 201; `STRASSE` frente a
       `Straße` → 201).

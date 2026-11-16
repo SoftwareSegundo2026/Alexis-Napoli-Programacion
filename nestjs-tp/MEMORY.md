@@ -5,8 +5,8 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 ## Estado actual
 - TP-1 (`001-chinook-nest`) **cerrado, validado y pusheado** (`91124e0`).
 - TP-2 (`002-auth-roles`) **cerrado**: T1–T9 y `validate.md` → APROBADO.
-- TP-5 (`005-calidad`) **en curso**: spec, clarify, plan y tareas aprobados; T1–T4 cerradas. Siguiente: T5 (bug 2, dos commits).
-- Tests: `pnpm test` 249 (29 archivos) y `pnpm test:e2e` 367 (15 archivos) en verde; lint sin avisos;
+- TP-5 (`005-calidad`) **en curso**: spec, clarify, plan y tareas aprobados; T1–T5 cerradas. Siguiente: T6 (bug 3, dos commits).
+- Tests: `pnpm test` 257 (30 archivos) y `pnpm test:e2e` 375 (16 archivos) en verde; lint sin avisos;
   `pnpm exec tsc --noEmit -p tsconfig.json` también limpio (chequea los tipos de `test/`).
 - Cobertura (unit, todo `src/`): líneas 76,52% (476/622, **146 sin cubrir**) · ramas 80,4%
   (201/250, **49 sin cubrir**). Umbral 75/75. Ninguna tarea del TP-5 puede subir lo sin cubrir.
@@ -83,6 +83,13 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   como `OFFSET 100000000000000000000` (> 2^63 → SQLite "datatype mismatch"); 400 dígitos → `Infinity`.
   Arreglo: `toStrictInteger` topa en `Number.MAX_SAFE_INTEGER` (mismo resultado `[]`). Rojo: 2 unit +
   6 e2e (`pagination-limits.e2e-spec.ts`), solo los nuevos. Cobertura: 146/49 sin cubrir (igual).
+- 16/11 · 005-T5 **BUG 2** (rojo `e485fe1` → arreglo `005-T5`). Síntoma: "CANCIÓN ÑANDÚ" tras "Canción
+  Ñandú" → 201 (también el artista real "ANTÔNIO CARLOS JOBIM"). Causa: `LOWER()` de SQLite solo
+  convierte A–Z. Arreglo: `src/database/sql-functions.ts` (`unicode_lower` = `toLowerCase`,
+  determinística) registrada en `prepareDatabase`; `existsWithName` de artistas y géneros la usa.
+  OJO al escribir rojos de este bug: la letra no ASCII tiene que CAMBIAR de caja ("Émile"/"ÉMILE" no
+  sirve) y cada test necesita nombres propios (un duplicado creado por el bug hace pasar a otro test).
+  `NOTHING` es palabra reservada de SQLite. Verificado con la app real. Cobertura: 146/49 (igual).
 
 ## Decisiones del plan 002 a recordar en las próximas tareas
 - Guards globales (`APP_GUARD`, autenticación → roles); lo público con `@Public()`.
@@ -107,5 +114,5 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   comprobar el valor y `JSON.stringify`, no `toHaveProperty`.
 
 ## Próximos pasos
-- TP-5: T5 (bug 2: mayúsculas no ASCII) según `specs/005-calidad/tasks.md`.
+- TP-5: T6 (bug 3: opcional vacío → null) según `specs/005-calidad/tasks.md`.
 - Pendiente para el TP-4: test de modificaciones concurrentes (observación de `001/validate.md`).

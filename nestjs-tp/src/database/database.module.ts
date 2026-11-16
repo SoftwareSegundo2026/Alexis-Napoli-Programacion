@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule, type TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { fileURLToPath } from 'node:url';
 import { prepareDatabase } from './prepare-database.js';
+import { registerSqlFunctions } from './sql-functions.js';
 
 /**
  * Copia versionada de la Chinook del docente. Se resuelve relativa a este
@@ -30,6 +31,8 @@ export const TEMPLATE_DATABASE_PATH = fileURLToPath(
           autoLoadEntities: true,
           // Es un archivo local: reintentar no arregla nada y solo demora el error.
           retryAttempts: 0,
+          // Funciones SQL propias (unicode_lower), en cada conexión que se abre.
+          prepareDatabase: registerSqlFunctions,
         };
       },
     }),

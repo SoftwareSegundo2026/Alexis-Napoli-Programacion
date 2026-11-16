@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { unicodeLower } from '../database/sql-functions.js';
 import { Genre } from './entities/genre.entity.js';
 
 /** Datos de un género nuevo (sin id: lo asigna la base). */
@@ -30,12 +31,14 @@ export class GenresRepository {
   /**
    * ¿Otro género ya usa este nombre? Sin distinguir mayúsculas ni los espacios
    * de los extremos (RF-13). `excludeId` deja afuera al propio registro.
-   * Nota: `LOWER()` de SQLite solo normaliza letras ASCII.
+   * Usa `unicode_lower` y no `LOWER()`, que solo normaliza A–Z (spec 005 RF-7).
    */
   existsWithName(name: string, excludeId?: number): Promise<boolean> {
     const query = this.genres
       .createQueryBuilder('genre')
-      .where('LOWER(TRIM(genre.name)) = LOWER(:name)', { name: name.trim() });
+      .where('unicode_lower(TRIM(genre.name)) = :name', {
+        name: unicodeLower(name.trim()),
+      });
     if (excludeId !== undefined) {
       query.andWhere('genre.id <> :excludeId', { excludeId });
     }

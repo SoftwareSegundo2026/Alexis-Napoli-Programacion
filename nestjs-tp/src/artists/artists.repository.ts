@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { unicodeLower } from '../database/sql-functions.js';
 import { Artist } from './entities/artist.entity.js';
 
 /** Datos de un artista nuevo (sin id: lo asigna la base). */
@@ -28,11 +29,14 @@ export class ArtistsRepository {
   /**
    * ¿Otro artista ya usa este nombre? Sin distinguir mayúsculas ni espacios de
    * los extremos (RF-13); `excludeId` deja afuera al propio registro.
+   * Usa `unicode_lower` y no `LOWER()`, que solo normaliza A–Z (spec 005 RF-7).
    */
   existsWithName(name: string, excludeId?: number): Promise<boolean> {
     const query = this.artists
       .createQueryBuilder('artist')
-      .where('LOWER(TRIM(artist.name)) = LOWER(:name)', { name: name.trim() });
+      .where('unicode_lower(TRIM(artist.name)) = :name', {
+        name: unicodeLower(name.trim()),
+      });
     if (excludeId !== undefined) {
       query.andWhere('artist.id <> :excludeId', { excludeId });
     }
