@@ -16,7 +16,7 @@ Reglas: una tarea por vez, tests primero (en rojo), gates
       que el template no cambió.
       Estimación: 30 min · depende de: —
 
-- [ ] **T2. Núcleo HTTP común.** RF-2, RF-10, contrato `{"detail"}`
+- [x] **T2. Núcleo HTTP común.** RF-2, RF-10, contrato `{"detail"}`
       `configureApp` (prefijo `/api/v1`, `ValidationPipe`, filtro de errores), DTO de
       paginación y helpers de validación (trim, primer error → `detail`).
       Hecho cuando: `pnpm test` pasa los tests del filtro (`HttpException` → `{"detail"}`,

@@ -2,6 +2,7 @@ import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule, ObserveInstrument, observeEnabled } from './app.module.js';
+import { configureApp } from './app.setup.js';
 
 async function bootstrap() {
   if (!observeEnabled) {
@@ -15,6 +16,7 @@ async function bootstrap() {
     // registrado: sin ese módulo no hay agente que consuma los spans.
     instrument: observeEnabled ? ObserveInstrument : undefined,
   });
+  configureApp(app);
 
   const config = app.get(ConfigService);
   const port = Number(config.get<string>('PORT') || 3000);
