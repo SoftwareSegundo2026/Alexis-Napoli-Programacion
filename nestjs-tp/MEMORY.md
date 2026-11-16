@@ -3,9 +3,9 @@
 Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al terminar **cada tarea**.
 
 ## Estado actual
-- Fase del flujo: `001-chinook-nest` (TP-1) → implementando. **T1–T4 hechas**; siguiente: T5 (artistas).
+- Fase del flujo: `001-chinook-nest` (TP-1) → implementando. **T1–T5 hechas**; siguiente: T6 (álbumes).
 - Specs activas: `specs/001-chinook-nest/` (TP-1) · `specs/000-ejemplo-chinook/` (referencia del docente)
-- Tests: `pnpm test` 78 (13 archivos) y `pnpm test:e2e` 41 (4 archivos) en verde; lint y build en verde.
+- Tests: `pnpm test` 96 (16 archivos) y `pnpm test:e2e` 63 (5 archivos) en verde; lint y build en verde.
 
 ## Decisiones (y por qué)
 - 15/11 · Base `programacion/nestjs-music`; constitución del docente sin cambios; lint con
@@ -31,6 +31,8 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   DTOs create/update/response (`fromEntity`). PATCH usa `@IfPresent()` (no `@IsOptional`).
 - 16/11 · T4: nombre único con `LOWER(TRIM(name)) = LOWER(:name)` excluyendo el propio id;
   conteo de referencias con SQL parametrizado sobre `Track`. Mensajes 409 en inglés, con la causa.
+- 16/11 · T5: campos **opcionales** (`ImageUrl`) usan `@IsOptional()`: `null` quita el valor. Los
+  **obligatorios** en PATCH usan `@IfPresent()`: `null` → 400.
 
 ## Aprendizajes y errores a evitar
 - `ConfigModule.forRoot({ validate })` valida al **importar** `app.module`, no en `init()`.
@@ -43,5 +45,5 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 - `test/app.e2e-spec.ts` (de la base) no pasa `prettier --check`; no se tocó.
 
 ## Próximos pasos
-- T5: artistas (mismo patrón que géneros + `ImageUrl` opcional ≤ 500; 409 si tiene álbumes).
+- T6: álbumes (reemplaza el andamio `albums`; `ArtistName`; `ArtistId` inexistente → 400; 409 si tiene pistas).
 - Pendiente de T6: el andamio `albums` tiene 2 warnings de lint (parámetros sin usar).

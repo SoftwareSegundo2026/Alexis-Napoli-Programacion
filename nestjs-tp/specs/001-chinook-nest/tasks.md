@@ -39,7 +39,7 @@ Reglas: una tarea por vez, tests primero (en rojo), gates
       (paginado con `skip`/`take`), y `pnpm test:e2e` pasa `test/genres.e2e-spec.ts`.
       Estimación: 30 min · depende de: T3
 
-- [ ] **T5. Artistas: CRUD completo.** RF-1, RF-2, RF-3, RF-6, RF-7, RF-8, RF-9, RF-12, RF-13
+- [x] **T5. Artistas: CRUD completo.** RF-1, RF-2, RF-3, RF-6, RF-7, RF-8, RF-9, RF-12, RF-13
       Igual que T4 para `artists` (409 si tiene álbumes o el nombre ya existe).
       Hecho cuando: `pnpm test` pasa los tests del service y `pnpm test:e2e` pasa
       `test/artists.e2e-spec.ts`.

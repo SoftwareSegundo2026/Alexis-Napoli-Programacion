@@ -5,6 +5,7 @@ import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { AlbumsModule } from './albums/albums.module.js';
 import { validateEnv } from './config/env.validation.js';
+import { ArtistsModule } from './artists/artists.module.js';
 import { DatabaseModule } from './database/database.module.js';
 import { GenresModule } from './genres/genres.module.js';
 
@@ -57,6 +58,7 @@ export const observeEnabled = observeModule !== undefined;
     ...(observeModule ? [observeModule] : []),
     DatabaseModule,
     GenresModule,
+    ArtistsModule,
     AlbumsModule,
   ],
   controllers: [AppController],
