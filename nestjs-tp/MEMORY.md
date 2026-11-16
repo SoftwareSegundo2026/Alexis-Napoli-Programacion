@@ -3,9 +3,9 @@
 Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al terminar **cada tarea**.
 
 ## Estado actual
-- Fase del flujo: `001-chinook-nest` (TP-1) → implementando. **T1–T6 hechas**; siguiente: T7 (pistas).
+- Fase del flujo: `001-chinook-nest` (TP-1) → implementando. **T1–T7 hechas**; siguiente: T8 (Swagger).
 - Specs activas: `specs/001-chinook-nest/` (TP-1) · `specs/000-ejemplo-chinook/` (referencia del docente)
-- Tests: `pnpm test` 118 (18 archivos) y `pnpm test:e2e` 80 (6 archivos) en verde; lint sin avisos; build verde.
+- Tests: `pnpm test` 151 (21 archivos) y `pnpm test:e2e` 101 (7 archivos) en verde; lint sin avisos; build verde.
 
 ## Decisiones (y por qué)
 - 15/11 · Base `programacion/nestjs-music`; constitución del docente sin cambios; lint con
@@ -38,6 +38,10 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
   el repository relee tras guardar. `ArtistsModule` exporta su repository para validar `ArtistId`.
 - 16/11 · T6: id relacionado inexistente → 400 `"ArtistId N does not match any artist"`; se
   chequea DESPUÉS del 404 del propio álbum (primero existe lo pedido, después sus datos).
+- 16/11 · T7: `MediaType`, `InvoiceLine` (reducida) y `PlaylistTrack` como entidades de solo
+  lectura en `tracks/entities`. `UnitPrice` con transformer a `Number` (contrato: número JSON).
+  Albums y Genres exportan su repository para validar ids. Ninguna pista original está libre
+  de referencias ni sin álbum/género: el 204 y el `null` de RF-5 se prueban con pistas nuevas.
 
 ## Aprendizajes y errores a evitar
 - `ConfigModule.forRoot({ validate })` valida al **importar** `app.module`, no en `init()`.
@@ -50,5 +54,4 @@ Memoria del proyecto entre sesiones. Máximo ~50 líneas. Se actualiza al termin
 - `test/app.e2e-spec.ts` (de la base) no pasa `prettier --check`; no se tocó.
 
 ## Próximos pasos
-- T7: pistas (`AlbumTitle`, `GenreName`, `MediaTypeName`; MediaType/InvoiceLine/PlaylistTrack de
-  solo lectura; 409 si está en facturas o playlists; `UnitPrice` numérico).
+- T8: Swagger en `/docs` + `/docs-json`, `@ApiProperty` explícito, esquema `X-API-Key`; e2e de las 20 rutas.

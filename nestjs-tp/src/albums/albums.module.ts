@@ -11,5 +11,7 @@ import { Album } from './entities/album.entity.js';
   imports: [TypeOrmModule.forFeature([Album]), ArtistsModule],
   controllers: [AlbumsController],
   providers: [AlbumsService, AlbumsRepository],
+  // Pistas lo usa para validar que el AlbumId exista (RF-9).
+  exports: [AlbumsRepository],
 })
 export class AlbumsModule {}

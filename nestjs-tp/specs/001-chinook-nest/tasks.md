@@ -52,7 +52,7 @@ Reglas: una tarea por vez, tests primero (en rojo), gates
       `test/albums.e2e-spec.ts` (incluido `ArtistName` y la validación de `ArtistId`).
       Estimación: 30 min · depende de: T5
 
-- [ ] **T7. Pistas: CRUD completo con datos enriquecidos.** RF-1, RF-2, RF-3, RF-5, RF-6, RF-7, RF-8, RF-9, RF-12
+- [x] **T7. Pistas: CRUD completo con datos enriquecidos.** RF-1, RF-2, RF-3, RF-5, RF-6, RF-7, RF-8, RF-9, RF-12
       Entidades de solo lectura `MediaType`, `InvoiceLine`, `PlaylistTrack`. Validación de
       la tabla de la spec, ids relacionados inexistentes → 400, 409 si está en facturas o
       playlists, `UnitPrice` numérico.

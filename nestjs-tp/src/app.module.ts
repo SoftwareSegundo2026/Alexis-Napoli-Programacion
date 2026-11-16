@@ -8,6 +8,7 @@ import { validateEnv } from './config/env.validation.js';
 import { ArtistsModule } from './artists/artists.module.js';
 import { DatabaseModule } from './database/database.module.js';
 import { GenresModule } from './genres/genres.module.js';
+import { TracksModule } from './tracks/tracks.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -60,6 +61,7 @@ export const observeEnabled = observeModule !== undefined;
     GenresModule,
     ArtistsModule,
     AlbumsModule,
+    TracksModule,
   ],
   controllers: [AppController],
   providers: [AppService],

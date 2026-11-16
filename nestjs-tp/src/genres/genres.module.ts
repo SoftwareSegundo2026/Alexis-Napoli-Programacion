@@ -9,5 +9,7 @@ import { GenresService } from './genres.service.js';
   imports: [TypeOrmModule.forFeature([Genre])],
   controllers: [GenresController],
   providers: [GenresService, GenresRepository],
+  // Pistas lo usa para validar que el GenreId exista (RF-9).
+  exports: [GenresRepository],
 })
 export class GenresModule {}
