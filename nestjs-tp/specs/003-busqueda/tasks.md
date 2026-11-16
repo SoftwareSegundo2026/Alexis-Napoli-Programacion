@@ -36,7 +36,7 @@ Después, **PARA**. Push de la rama con OK del usuario; entra a `main` por PR (s
       sigue respondiendo (la ruta `search` no lo pisa).
       Estimación: 35 min · depende de: T2
 
-- [ ] **T4. Casos límite por HTTP y documentación de parámetros.** RF-1–RF-12 · casos 1–21
+- [x] **T4. Casos límite por HTTP y documentación de parámetros.** RF-1–RF-12 · casos 1–21
       `test/tracks-search.e2e-spec.ts` con los 21 casos de la spec; test de `/docs-json` con los
       11 parámetros y sus tipos.
       Hecho cuando: `pnpm test:e2e` pasa los 21 casos y el test de documentación; mutación: quitar
